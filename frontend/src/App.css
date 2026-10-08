@@ -10,7 +10,7 @@ input, textarea, select, button { font: inherit; padding: 6px 8px; border: 1px s
 input, textarea { width: 100%; }
 input[type=number] { width: 64px; }
 input.narrow { width: 130px; }
-textarea.big { height: calc(100vh - 190px); resize: none; }
+textarea.big { height: calc(100vh - 220px); resize: none; }
 .mono, pre, code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
 pre { background: #1c1f24; color: #e8ecf1; padding: 12px; border-radius: 8px; overflow: auto; }
 button { cursor: pointer; }
@@ -38,4 +38,6 @@ button.icon { padding: 2px 6px; border: none; background: none; color: #888; }
 .prob { display: flex; align-items: center; gap: 6px; font-size: 12px; }
 .plabel { width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pval { width: 36px; text-align: right; }
+footer { padding: 6px 16px; text-align: center; font-size: 12px; color: #6b7280; background: #fff; border-top: 1px solid #dde1e6; }
+footer a { color: #2f5bea; }
 @media (max-width: 1100px) { main { grid-template-columns: 1fr; overflow: auto; } textarea.big { height: 300px; } }

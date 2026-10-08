@@ -127,6 +127,7 @@ export default function App() {
           {result ? <Results data={result} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>
+      <footer>Built by Siddhartha Pandey · Powered by <a href="https://docs.typesafe.ai" target="_blank" rel="noreferrer">Jev</a></footer>
     </div>
   )
 }
