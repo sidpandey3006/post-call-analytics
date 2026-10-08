@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: post-call-analytics-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: ALLOWED_ORIGINS
+        sync: false # e.g. https://<user>.github.io
