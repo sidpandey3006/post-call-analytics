@@ -1,18 +1,28 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { analyze, fetchSalesTemplate, previewTranscript } from './api'
+import { analyze, fetchTemplate, previewTranscript } from './api'
 import { FieldBuilder } from './FieldBuilder'
 import { Results } from './Results'
 import { normalizeFields } from './types'
 import type { AnalyzeResponse, FieldDef } from './types'
 
 const SAMPLE = JSON.stringify({
-  call_id: 'demo-1',
+  call_id: 'loan-demo-1',
   turns: [
-    { speaker: 'agent', start: 0, text: 'Hi Dana, this is Sam from Acme. This call is recorded. Are you the one who signs off on tools?' },
-    { speaker: 'customer', start: 8, text: "Yes, I am. We're looking for something under 5k a year." },
-    { speaker: 'agent', start: 15, text: 'Our Pro plan is $4,800 per year and fits that. Can we book a demo?' },
-    { speaker: 'customer', start: 24, text: "Sounds good, let's do 12 October. Email me at dana.whit@acme-corp.com or call (415) 555-0177." },
+    { speaker: 'agent', start: 0, text: 'Hello, this is Sam calling from Acme Finance. This call may be recorded. Am I speaking with Dana?' },
+    { speaker: 'customer', start: 7, text: 'Yes, speaking.' },
+    { speaker: 'agent', start: 10, text: 'Thanks Dana. You have a pre-approved personal loan of up to Rs 5,00,000 at rates starting from 11% per annum. Would you like to hear how it could work for you?' },
+    { speaker: 'customer', start: 22, text: 'Sure, tell me.' },
+    { speaker: 'agent', start: 25, text: 'How much would you like, and for how many months?' },
+    { speaker: 'customer', start: 31, text: 'About Rs 2,00,000 for 24 months.' },
+    { speaker: 'agent', start: 36, text: 'That comes to an EMI of about Rs 9,300 per month, with a processing fee of 1%. Is that EMI comfortable for you?' },
+    { speaker: 'customer', start: 46, text: 'Yes, that works.' },
+    { speaker: 'agent', start: 49, text: 'Are you salaried or self-employed, and what is your net monthly income?' },
+    { speaker: 'customer', start: 55, text: 'Salaried, around Rs 85,000 a month.' },
+    { speaker: 'agent', start: 60, text: 'To check eligibility we need to run a credit bureau check. Do you consent to this? Please say yes or no.' },
+    { speaker: 'customer', start: 70, text: 'Yes, I consent.' },
+    { speaker: 'agent', start: 73, text: 'Thank you. We can arrange a document pickup. Would 12 October work? I will send a link to (415) 555-0177.' },
+    { speaker: 'customer', start: 84, text: 'Yes, 12 October is fine. You can also email me at dana.whit@acme-corp.com.' },
   ],
 }, null, 2)
 
@@ -32,6 +42,19 @@ export default function App() {
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
 
   useEffect(() => { localStorage.setItem('pca.fields', JSON.stringify(fields)) }, [fields])
+
+  // Start with the loan template until the user has had it applied once and chosen otherwise
+  useEffect(() => {
+    if (!localStorage.getItem('pca.defaultApplied') && fields.length === 0) {
+      fetchTemplate('loan').then((t) => setFields(normalizeFields(t))).catch(() => {})
+    }
+    localStorage.setItem('pca.defaultApplied', '1')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const loadTemplate = async (name: 'loan' | 'sales') => {
+    try { setFields(normalizeFields(await fetchTemplate(name))) } catch (e) { setError(String(e)) }
+  }
 
   const parsed = (): unknown => JSON.parse(transcript)
 
@@ -86,7 +109,8 @@ export default function App() {
         <section>
           <h2>2. Fields</h2>
           <div className="row wrap">
-            <button className="small" onClick={async () => { try { setFields(normalizeFields(await fetchSalesTemplate())) } catch (e) { setError(String(e)) } }}>Load sales template</button>
+            <button className="small" onClick={() => loadTemplate('loan')}>Load loan sales template</button>
+            <button className="small" onClick={() => loadTemplate('sales')}>Load sales template</button>
             <button className="small" onClick={savePreset} disabled={!fields.length}>Save preset</button>
             <select value="" onChange={(e) => e.target.value && setFields(normalizeFields(presets[e.target.value]))}>
               <option value="">Load preset…</option>

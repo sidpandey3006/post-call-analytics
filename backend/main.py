@@ -36,9 +36,14 @@ def health():
     return {"ok": True}
 
 
-@app.get("/api/templates/sales")
-def sales_template():
-    return json.loads((TEMPLATES / "sales.json").read_text(encoding="utf-8"))
+TEMPLATE_FILES = {"loan": "loan.json", "sales": "sales.json"}
+
+
+@app.get("/api/templates/{name}")
+def get_template(name: str):
+    if name not in TEMPLATE_FILES:
+        raise HTTPException(404, f"Unknown template '{name}'")
+    return json.loads((TEMPLATES / TEMPLATE_FILES[name]).read_text(encoding="utf-8"))
 
 
 @app.post("/api/normalize-preview")

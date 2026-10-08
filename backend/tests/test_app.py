@@ -128,7 +128,9 @@ def test_analyze_bad_transcript():
     assert client.post("/api/analyze", json=p).status_code == 400
 
 
-def test_sales_template_valid():
-    fields = [FieldDef(**f) for f in client.get("/api/templates/sales").json()]
-    qs, _ = build_questions(fields, "a@b.com 12 Oct 2026 $5 +14155550177")
-    assert len(qs) == len(fields)
+def test_templates_valid():
+    for name in ("sales", "loan"):
+        fields = [FieldDef(**f) for f in client.get(f"/api/templates/{name}").json()]
+        qs, _ = build_questions(fields, "a@b.com 12 Oct 2026 $5 +14155550177")
+        assert len(qs) == len(fields)
+    assert client.get("/api/templates/nope").status_code == 404

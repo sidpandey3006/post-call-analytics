@@ -31,4 +31,4 @@ export const analyze = (p: {
   model: string
 }) => request<AnalyzeResponse>('/api/analyze', post(p))
 
-export const fetchSalesTemplate = () => request<FieldDef[]>('/api/templates/sales')
+export const fetchTemplate = (name: 'loan' | 'sales') => request<FieldDef[]>(`/api/templates/${name}`)
