@@ -10,10 +10,10 @@ export function ScenarioGallery({ scenarios, selected, onPick, extra }: Props) {
       <summary>Example scenarios <span className="muted">· click one to load its fields and a sample call, then edit</span></summary>
       <div className="tiles">
         {scenarios.map((s) => (
-          <button key={s.name} className={`tile${selected === s.name ? ' on' : ''}`} onClick={() => onPick(s)} title={s.description}>
-            <span className="tile-title">{s.title}</span>
+          <button key={s.name} className={`tile${selected === s.name ? ' on' : ''}`} aria-pressed={selected === s.name} onClick={() => onPick(s)} title={s.description}>
+            <span className="tile-title">{selected === s.name && <span className="check">✓ </span>}{s.title}</span>
             <span className="tile-pub">{s.publisher}</span>
-            <span className="tile-tags">{s.tags.map((t) => <span key={t} className="tag">{t}</span>)}</span>
+            <span className="tile-tags">{s.tags.map((t) => <span key={t} className="tag">{t}</span>)}{selected === s.name && <span className="tag sel">Selected</span>}</span>
           </button>
         ))}
         {extra}

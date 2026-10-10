@@ -62,3 +62,8 @@ header .row input.narrow { width: 120px; }
 .tile-gen p { margin: 0; }
 .tile-gen textarea { min-height: 54px; }
 @media (max-width: 900px) { .tile-gen { grid-column: 1 / -1; } }header .row.wrap { margin: 0; }
+
+.tile.on { border: 2px solid #0f6cbd; background: #dcebfa; box-shadow: 0 2px 8px rgba(15,108,189,.35); padding: 9px 11px; }
+.tile.on .tile-title { color: #0a4f8f; }
+.check { color: #0f6cbd; font-weight: 700; }
+.tag.sel { background: #0f6cbd; border-color: #0f6cbd; color: #fff; }
