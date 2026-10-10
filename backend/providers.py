@@ -59,6 +59,8 @@ async def _post(url: str, headers: dict, body: dict, retries: int = 2) -> dict:
                 except Exception:
                     detail = resp.text[:300]
                 msg = _FRIENDLY.get(resp.status_code, f"Model endpoint error {resp.status_code}")
+                if "DeploymentNotFound" in resp.text:
+                    msg = "Deployment not found: the model field must be your Foundry deployment name (Foundry portal > Deployments), not the model name."
                 last = DecisionError(resp.status_code, f"{msg} {detail}".strip())
                 if resp.status_code not in (429, 500, 502, 503, 504):
                     raise last
