@@ -47,10 +47,10 @@ export type Scenario = {
 }
 export const fetchScenarios = () => request<Scenario[]>('/api/scenarios')
 
-export type Suggestion = { name: string; title: string; description: string; notice?: string | null; fields: FieldDef[] }
+export type Suggestion = { name: string; title: string; description: string; notice?: string | null; sample?: unknown; fields: FieldDef[] }
 export type GenerateResult =
   | { mode: 'suggestions'; matches: Suggestion[] }
-  | { mode: 'generated'; fields: FieldDef[]; rejected: { id: string; reason: string }[]; warnings: string[] }
+  | { mode: 'generated'; fields: FieldDef[]; rejected: { id: string; reason: string }[]; warnings: string[]; sample?: unknown }
 
 export const generateFields = (p: {
   description: string

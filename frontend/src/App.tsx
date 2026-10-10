@@ -40,6 +40,7 @@ export default function App() {
   const [provider, setProvider] = useState<'jev' | 'microsoft'>(() => (localStorage.getItem('pca.provider') as 'jev' | 'microsoft') || 'microsoft')
   const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
   const [flash, setFlash] = useState(false)
+  const [nudge, setNudge] = useState(false)
   const [model, setModel] = useState(() => { const v = localStorage.getItem('pca.deployment'); return !v || v === 'Microsoft-Decision-1' ? 'Decision-1' : v })
   useEffect(() => { localStorage.setItem('pca.provider', provider); localStorage.setItem('pca.endpoint', endpoint); localStorage.setItem('pca.deployment', model) }, [provider, endpoint, model])
   const changeProvider = (p: 'jev' | 'microsoft') => { setProvider(p); setModel(p === 'jev' ? 'jev-latest' : 'Decision-1') }
@@ -85,7 +86,7 @@ export default function App() {
   }
 
   const run = async () => {
-    setError(''); setLoading(true)
+    setError(''); setLoading(true); setNudge(false)
     try {
       setResult(await analyze({ api_key: apiKey, transcript: parsed(), fields, model, provider, endpoint: provider === 'microsoft' ? endpoint : undefined }))
     } catch (e) { setError(e instanceof Error ? e.message : String(e)) }
@@ -119,10 +120,11 @@ export default function App() {
           {provider === 'microsoft' && <input className="endpoint" placeholder="Foundry endpoint https://<resource>.services.ai.azure.com" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />}
           <input type="password" placeholder={provider === 'microsoft' ? 'Foundry API key (kept in memory only)' : 'TypeSafe API key (kept in memory only)'} value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" />
           <input className="narrow" value={model} onChange={(e) => setModel(e.target.value)} title={provider === 'microsoft' ? 'Foundry deployment name' : 'model'} />
-          <button className="primary" disabled={!canRun} onClick={run}>{loading ? 'Running…' : 'Run analysis'}</button>
+          <button className={"primary" + (nudge && canRun ? ' pulse' : '')} disabled={!canRun} onClick={run}>{loading ? 'Running…' : 'Run analysis'}</button>
         </div>
       </header>
       {provider === 'microsoft' && fields.some((f) => /loan|bureau/i.test(f.id)) && <div className="muted banner">Decision support only: Microsoft-Decision-1 must not be the sole basis for credit or other consequential decisions about people. Keep human review.</div>}
+      {nudge && <div className="ok banner">✓ Fields{' '}and sample transcript loaded. Next: {canRun ? <button className="primary small" onClick={run}>Run analysis</button> : <strong>enter your endpoint, API key and deployment in the header, then click Run analysis</strong>}</div>}
       {error && <div className="flag banner">{error}</div>}
       <ScenarioGallery
         scenarios={scenarios}
@@ -133,7 +135,7 @@ export default function App() {
             endpoint={endpoint}
             apiKey={apiKey}
             canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
-            onApply={(fs, mode) => { setFlash(true); setTimeout(() => setFlash(false), 2500); document.getElementById('fields-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); setFields((cur) => {
+            onApply={(fs, mode, sample) => { setNudge(true); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.getElementById('fields-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); setFields((cur) => {
               if (mode === 'replace') return fs
               const ids = new Set(cur.map((f) => f.id))
               return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]

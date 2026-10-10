@@ -22,13 +22,17 @@ Rules:
 - id: snake_case, unique, max 40 chars.
 - Prefer 5-12 fields focused on process quality, explicit customer-stated facts, consent/disclosures, outcomes and next steps.
 - Do NOT create fields that infer protected attributes, emotions or personality for hiring, deception or fraud likelihood, creditworthiness or eligibility, claim validity, admission or housing suitability, or medical triage/diagnosis. Instead produce operational, compliance and call-quality fields for that domain.
+- Also write sample_transcript: a realistic 8-14 turn call (speakers agent and customer) for this use case. For every entity field, include the literal value in the transcript (e.g. a phone like 415-555-0123, a date like 12 November, an amount like $1,200, an email like name@example.com). Use fictional data only.
 - Only add identity_verified or sentiment-style fields if the scenario makes them relevant."""
 
 SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["fields"],
-    "properties": {"fields": {"type": "array", "items": {
+    "required": ["fields", "sample_transcript"],
+    "properties": {"sample_transcript": {"type": "array", "description": "A realistic 8-14 turn example call", "items": {
+        "type": "object", "additionalProperties": False, "required": ["speaker", "text"],
+        "properties": {"speaker": {"type": "string", "enum": ["agent", "customer"]}, "text": {"type": "string"}}}},
+        "fields": {"type": "array", "items": {
         "type": "object",
         "additionalProperties": False,
         "required": ["id", "kind", "instructions", "options", "levels", "entity_type"],
@@ -50,11 +54,25 @@ def build_chat_body(description: str, max_fields: int, strict: bool = True) -> d
     rf = ({"type": "json_schema", "json_schema": {"name": "fields", "strict": True, "schema": SCHEMA}}
           if strict else {"type": "json_object"})
     return {"messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}],
-            "temperature": 0.2, "max_tokens": 3000, "response_format": rf}
+            "temperature": 0.2, "max_tokens": 4500, "response_format": rf}
 
 
 def _clean(s: str, n: int) -> str:
     return re.sub(r"[\x00-\x08\x0b-\x1f]", "", str(s)).strip()[:n]
+
+
+def parse_sample(content: str) -> dict | None:
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", content.strip())
+    try:
+        turns = json.loads(text).get("sample_transcript")
+    except (json.JSONDecodeError, AttributeError):
+        return None
+    if not isinstance(turns, list):
+        return None
+    out = [{"speaker": t["speaker"], "start": i * 6, "text": _clean(t["text"], 600)}
+           for i, t in enumerate(turns)
+           if isinstance(t, dict) and t.get("speaker") in ("agent", "customer") and isinstance(t.get("text"), str) and t["text"].strip()]
+    return {"call_id": "generated-sample", "turns": out} if len(out) >= 2 else None
 
 
 def parse_generated(content: str, max_fields: int) -> tuple[list[FieldDef], list[dict], list[str]]:
@@ -112,6 +130,6 @@ def suggest_templates(description: str, limit: int = 3) -> list[dict]:
         scored.append((score, t))
     scored.sort(key=lambda x: -x[0])
     return [{"name": t["name"], "title": t["title"], "description": t["description"], "score": s,
-             "notice": t.get("notice"), "fields": t["fields"]} for s, t in scored[:limit] if s > 0] or [
+             "notice": t.get("notice"), "sample": t.get("sample"), "fields": t["fields"]} for s, t in scored[:limit] if s > 0] or [
         {"name": t["name"], "title": t["title"], "description": t["description"], "score": 0,
-         "notice": t.get("notice"), "fields": t["fields"]} for _, t in scored[:limit]]
+         "notice": t.get("notice"), "sample": t.get("sample"), "fields": t["fields"]} for _, t in scored[:limit]]

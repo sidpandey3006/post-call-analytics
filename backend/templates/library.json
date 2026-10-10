@@ -541,6 +541,61 @@
         "instructions": "What budget or price figure did the customer mention?",
         "entity_type": "amount"
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "auto-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Thank you for calling Sunrise Motors. How can I help you today?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "Hi, I'm looking at your new SUV models. Can you tell me about the features of the Aria?"
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "Of course. The Aria comes with a sunroof, six airbags, a 10 inch touchscreen and a hybrid engine option. Prices start at $28,500."
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "Nice. My budget is around $30,000. Do you have any finance offers?"
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "Yes, we have 3.9 percent financing this month. Would you like to book a test drive?"
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "Yes please, can I come on 14 November in the morning?"
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Yes, I have booked your test drive for 14 November at 10 am. Can I get a number to confirm by SMS?"
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "Sure, it's 415-555-0147. I'm planning to buy within two months."
+        },
+        {
+          "speaker": "agent",
+          "start": 48,
+          "text": "Great, you will get a confirmation shortly. Anything else I can help with?"
+        },
+        {
+          "speaker": "customer",
+          "start": 54,
+          "text": "No, that was really helpful, thank you."
+        }
+      ]
+    }
   }
 ]

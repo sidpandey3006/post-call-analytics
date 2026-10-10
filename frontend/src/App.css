@@ -1,16 +1,16 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7f9; color: #1c1f24; }
-.app { display: flex; flex-direction: column; height: 100vh; }
+.app { display: flex; flex-direction: column; min-height: 100vh; }
 header { display: flex; justify-content: space-between; align-items: center; padding: 4px 12px; background: #fff; border-bottom: 1px solid #dde1e6; gap: 8px; flex-wrap: wrap; }
 header h1 { font-size: 15px; margin: 0; white-space: nowrap; }
 h2 { font-size: 14px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: #555; }
-main { flex: 1; display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 12px; padding: 12px; overflow: hidden; }
+main { height: max(560px, calc(100vh - 90px)); display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 12px; padding: 12px; overflow: hidden; }
 section { overflow-y: auto; padding-right: 4px; }
 input, textarea, select, button { font: inherit; padding: 6px 8px; border: 1px solid #c8ced6; border-radius: 6px; background: #fff; }
 input, textarea { width: 100%; }
 input[type=number] { width: 64px; }
 input.narrow { width: 130px; }
-textarea.big { height: calc(100vh - 220px); resize: none; }
+textarea.big { height: max(420px, calc(100vh - 230px)); resize: none; }
 .mono, pre, code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
 pre { background: #1c1f24; color: #e8ecf1; padding: 12px; border-radius: 8px; overflow: auto; }
 button { cursor: pointer; }
@@ -71,3 +71,7 @@ header .row input.narrow { width: 120px; }
 @media (max-width: 1200px) { .gallery-body { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gen-side { max-height: none; } }
 
 .flash { outline: 2px solid #1a8f3c; outline-offset: 2px; border-radius: 6px; transition: outline .3s; }
+
+.ok.banner { margin: 8px 16px 0; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(47,91,234,.6); } 50% { box-shadow: 0 0 0 8px rgba(47,91,234,0); } }
+button.pulse { animation: pulse 1.2s infinite; }

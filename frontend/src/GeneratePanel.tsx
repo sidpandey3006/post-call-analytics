@@ -8,7 +8,7 @@ type Props = {
   endpoint: string
   apiKey: string
   canGenerate: boolean
-  onApply: (fields: FieldDef[], mode: 'replace' | 'append') => void
+  onApply: (fields: FieldDef[], mode: 'replace' | 'append', sample?: unknown) => void
 }
 
 export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props) {
@@ -34,7 +34,7 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
       if (r.mode === 'generated') {
         setPicked(Object.fromEntries(r.fields.map((f) => [f.id, true])))
         const fs = normalizeFields(r.fields)
-        if (fs.length) { onApply(fs, 'replace'); setDone('Generated ' + fs.length + ' fields and loaded them into section 2 (Fields). Uncheck any below and re-apply, or append instead.') }
+        if (fs.length) { onApply(fs, 'replace', r.sample); setDone('Generated ' + fs.length + ' fields' + (r.sample ? ' and a sample transcript' : '') + ' and loaded them. Review them in section 2, then click Run analysis.') }
       }
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)) }
     finally { setBusy(false) }
@@ -64,7 +64,7 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
           <div className="muted">{m.description}</div>
           {m.notice && <div className="muted">⚠ {m.notice}</div>}
           <div className="row">
-            <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'replace'); setDone('Loaded ' + m.fields.length + ' fields from ' + m.title + ' into section 2 (Fields).') }}>Replace fields</button>
+            <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'replace', m.sample); setDone('Loaded ' + m.fields.length + ' fields' + (m.sample ? ' and a sample transcript' : '') + ' from ' + m.title + '. Review them in section 2, then click Run analysis.') }}>Replace fields</button>
             <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'append'); setDone('Appended ' + m.fields.length + ' fields to section 2 (Fields).') }}>Append</button>
           </div>
         </div>

@@ -241,3 +241,11 @@ def test_scenarios_valid_and_samples_support_entities():
         for f in fields:
             if f.kind == "entity":
                 assert find_candidates(f.entity_type, text), f"{s['name']}:{f.id} has no candidate in sample"
+
+
+def test_parse_sample():
+    from generator import parse_sample
+    s = parse_sample('{"sample_transcript":[{"speaker":"agent","text":"Hi"},{"speaker":"customer","text":"Hello"},{"speaker":"bot","text":"x"}]}')
+    assert len(s['turns']) == 2 and normalize_transcript(s)[1] == []
+    assert parse_sample('not json') is None
+

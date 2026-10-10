@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from entities import NONE
-from generator import build_chat_body, parse_generated, suggest_templates
+from generator import build_chat_body, parse_generated, parse_sample, suggest_templates
 from providers import DecisionError, call_azure_chat, call_jev, call_microsoft
 from models import AnalyzeRequest, AnalyzeResponse
 from normalize import normalize_transcript, transcript_text
@@ -99,7 +99,7 @@ async def generate_fields(req: GenerateRequest):
     if not fields:
         raise HTTPException(422, f"No valid fields were generated. Rejected: {rejected}")
     return {"mode": "generated", "fields": [f.model_dump() for f in fields], "rejected": rejected,
-            "warnings": warnings, "usage": raw.get("usage")}
+            "warnings": warnings, "sample": parse_sample(content), "usage": raw.get("usage")}
 
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
