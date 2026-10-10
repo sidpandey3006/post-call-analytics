@@ -44,10 +44,17 @@ function ResultCard({ r }: { r: FieldResult }) {
   )
 }
 
-export function Results({ data }: { data: AnalyzeResponse }) {
+export function Results({ data, elapsedMs }: { data: AnalyzeResponse; elapsedMs?: number | null }) {
   const [tab, setTab] = useState<'results' | 'request' | 'response' | 'usage'>('results')
+  const inTok = data.usage?.input_tokens
+  const outTok = data.usage?.output_tokens
+  const total = inTok != null || outTok != null ? (inTok ?? 0) + (outTok ?? 0) : null
   return (
     <div className="stack">
+      <div className="metrics">
+        <span>⏱ <strong>{elapsedMs != null ? (elapsedMs / 1000).toFixed(1) + ' s' : '–'}</strong> <span className="muted">time taken</span></span>
+        <span>🔢 <strong>{total ?? '–'}</strong> <span className="muted">tokens ({inTok ?? '–'} in / {outTok ?? '–'} out)</span></span>
+      </div>
       <div className="tabs">
         {(['results', 'request', 'response', 'usage'] as const).map((t) => (
           <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{t}</button>
@@ -68,6 +75,7 @@ export function Results({ data }: { data: AnalyzeResponse }) {
         <div className="card">
           <div>Input tokens: <strong>{data.usage?.input_tokens ?? '–'}</strong></div>
           <div>Output tokens: <strong>{data.usage?.output_tokens ?? '–'}</strong></div>
+          <div>Time taken: <strong>{elapsedMs != null ? (elapsedMs / 1000).toFixed(2) + ' s' : '–'}</strong></div>
           <button className="small" onClick={() => {
             const blob = new Blob([JSON.stringify(data.results, null, 2)], { type: 'application/json' })
             const a = document.createElement('a')

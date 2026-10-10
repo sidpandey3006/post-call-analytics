@@ -40,6 +40,7 @@ export default function App() {
   const [provider, setProvider] = useState<'jev' | 'microsoft'>(() => (localStorage.getItem('pca.provider') as 'jev' | 'microsoft') || 'microsoft')
   const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
   const [flash, setFlash] = useState(false)
+  const [elapsedMs, setElapsedMs] = useState<number | null>(null)
   const [nudge, setNudge] = useState<false | 'both' | 'fields'>(false)
   const [genActive, setGenActive] = useState(false)
   const [model, setModel] = useState(() => { const v = localStorage.getItem('pca.deployment'); return !v || v === 'Microsoft-Decision-1' ? 'Decision-1' : v })
@@ -87,9 +88,12 @@ export default function App() {
   }
 
   const run = async () => {
-    setError(''); setLoading(true); setNudge(false)
+    setError(''); setLoading(true); setNudge(false); setElapsedMs(null)
+    const t0 = performance.now()
     try {
-      setResult(await analyze({ api_key: apiKey, transcript: parsed(), fields, model, provider, endpoint: provider === 'microsoft' ? endpoint : undefined }))
+      const r = await analyze({ api_key: apiKey, transcript: parsed(), fields, model, provider, endpoint: provider === 'microsoft' ? endpoint : undefined })
+      setElapsedMs(performance.now() - t0)
+      setResult(r)
     } catch (e) { setError(e instanceof Error ? e.message : String(e)) }
     finally { setLoading(false) }
   }
@@ -138,7 +142,7 @@ export default function App() {
             apiKey={apiKey}
             onActive={setGenActive}
             canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
-            onApply={(fs, mode, sample) => { setNudge(sample && mode === 'replace' ? 'both' : 'fields'); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.querySelector('main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setFields((cur) => {
+            onApply={(fs, mode, sample) => { setNudge(sample && mode === 'replace' ? 'both' : 'fields'); setResult(null); setElapsedMs(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.querySelector('main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setFields((cur) => {
               if (mode === 'replace') return fs
               const ids = new Set(cur.map((f) => f.id))
               return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
@@ -174,7 +178,7 @@ export default function App() {
             <button className={'primary' + (nudge && canRun ? ' pulse' : '')} disabled={!canRun} onClick={run}>{loading ? 'Running…' : '▶ Run analysis'}</button>
             {!canRun && !loading && <span className="muted">{fields.length === 0 ? 'Add fields first.' : provider === 'microsoft' ? 'Enter endpoint, key and deployment in the header.' : 'Enter your API key in the header.'}</span>}
           </div>
-          {result ? <Results data={result} /> : <p className="muted">Run an analysis to see structured results.</p>}
+          {result ? <Results data={result} elapsedMs={elapsedMs} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>
       <footer>Built by Siddhartha Pandey · Powered by {provider === 'microsoft' ? <a href="https://ai.azure.com/catalog/models/Microsoft-Decision-1" target="_blank" rel="noreferrer">Microsoft Decision-1</a> : <a href="https://docs.typesafe.ai" target="_blank" rel="noreferrer">Jev</a>}</footer>
