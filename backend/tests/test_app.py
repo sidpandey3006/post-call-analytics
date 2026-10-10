@@ -212,6 +212,13 @@ def test_library_templates_valid():
         build_questions([FieldDef(**f) for f in t["fields"]], "")
 
 
+def test_scenario_samples_have_no_warnings():
+    data = json.loads((Path(__file__).parent.parent / "templates" / "scenarios.json").read_text(encoding="utf-8"))
+    for s in data:
+        _, warns = normalize_transcript(s["sample"])
+        assert warns == [], (s["name"], warns)
+
+
 def test_scenarios_valid_and_samples_support_entities():
     from entities import find_candidates
     from models import FieldDef

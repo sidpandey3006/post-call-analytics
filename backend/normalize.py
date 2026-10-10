@@ -1,4 +1,5 @@
 """Normalize vendor STT JSON into a compact, evidence-friendly state."""
+import re
 from typing import Any
 
 SPEAKER_ALIASES = {
@@ -124,7 +125,8 @@ def normalize_transcript(data: Any, context: dict | None = None) -> tuple[dict, 
         if t["start"] is None:
             del t["start"]
     speakers = {t["speaker"] for t in turns}
-    if speakers.isdisjoint({"agent", "customer"}):
+    named = {s for s in speakers if s != "unknown" and not re.fullmatch(r"spk\w*|[a-z]|channel_?\d+", s)}
+    if not named:
         warnings.append("Speaker roles are not labelled agent/customer; role-based questions may be unreliable.")
     state: dict = {**meta, "turns": [{"i": t["i"], **{k: v for k, v in t.items() if k != "i"}} for t in turns]}
     if context:
