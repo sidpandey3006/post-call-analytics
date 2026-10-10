@@ -41,6 +41,7 @@ export default function App() {
   const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
   const [flash, setFlash] = useState(false)
   const [nudge, setNudge] = useState(false)
+  const [genActive, setGenActive] = useState(false)
   const [model, setModel] = useState(() => { const v = localStorage.getItem('pca.deployment'); return !v || v === 'Microsoft-Decision-1' ? 'Decision-1' : v })
   useEffect(() => { localStorage.setItem('pca.provider', provider); localStorage.setItem('pca.endpoint', endpoint); localStorage.setItem('pca.deployment', model) }, [provider, endpoint, model])
   const changeProvider = (p: 'jev' | 'microsoft') => { setProvider(p); setModel(p === 'jev' ? 'jev-latest' : 'Decision-1') }
@@ -129,11 +130,14 @@ export default function App() {
       <ScenarioGallery
         scenarios={scenarios}
         selected={scenario}
-        onPick={pickScenario}
+        onPick={(s) => { setGenActive(false); pickScenario(s) }}
+        focusGen={genActive}
+        onShowExamples={() => setGenActive(false)}
         extra={
           <GeneratePanel
             endpoint={endpoint}
             apiKey={apiKey}
+            onActive={setGenActive}
             canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
             onApply={(fs, mode, sample) => { setNudge(true); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.getElementById('fields-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); setFields((cur) => {
               if (mode === 'replace') return fs

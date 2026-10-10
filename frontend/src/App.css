@@ -75,3 +75,9 @@ header .row input.narrow { width: 120px; }
 .ok.banner { margin: 8px 16px 0; font-size: 14px; display: flex; gap: 8px; align-items: center; }
 @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(47,91,234,.6); } 50% { box-shadow: 0 0 0 8px rgba(47,91,234,0); } }
 button.pulse { animation: pulse 1.2s infinite; }
+
+.gallery-body.focus { grid-template-columns: 200px minmax(0, 1fr); }
+.gallery-body.focus .gen-side { max-height: 55vh; border-style: solid; box-shadow: 0 0 0 3px rgba(15,108,189,.15); }
+.gallery-body.focus .gen textarea { min-height: 90px; }
+.examples-collapsed { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding: 6px; border: 1px solid #dde1e6; border-radius: 8px; background: #f9fafb; }
+@media (max-width: 1200px) { .gallery-body.focus { grid-template-columns: 1fr; } }
