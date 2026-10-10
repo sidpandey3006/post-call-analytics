@@ -17,11 +17,12 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
   const [max, setMax] = useState(10)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [done, setDone] = useState('')
   const [res, setRes] = useState<GenerateResult | null>(null)
   const [picked, setPicked] = useState<Record<string, boolean>>({})
 
   const go = async () => {
-    setErr(''); setRes(null); setBusy(true)
+    setErr(''); setRes(null); setDone(''); setBusy(true)
     localStorage.setItem('pca.chatDeployment', chat)
     try {
       const useModel = canGenerate && chat.trim()
@@ -30,7 +31,11 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
         ...(useModel ? { endpoint, api_key: apiKey, chat_deployment: chat.trim() } : {}),
       })
       setRes(r)
-      if (r.mode === 'generated') setPicked(Object.fromEntries(r.fields.map((f) => [f.id, true])))
+      if (r.mode === 'generated') {
+        setPicked(Object.fromEntries(r.fields.map((f) => [f.id, true])))
+        const fs = normalizeFields(r.fields)
+        if (fs.length) { onApply(fs, 'replace'); setDone('Generated ' + fs.length + ' fields and loaded them into section 2 (Fields). Uncheck any below and re-apply, or append instead.') }
+      }
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)) }
     finally { setBusy(false) }
   }
@@ -48,6 +53,10 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
         <button className="primary" disabled={busy || desc.trim().length < 20} onClick={go}>{busy ? 'Working…' : 'Generate'}</button>
       </div>
       <p className="muted">With a Foundry chat deployment (same endpoint and key) the model generates fields; otherwise the closest starter templates are suggested. Review before applying. Decision support only.</p>
+      {busy && <div className="muted">Generating… this can take 10–30 seconds.</div>}
+      {done && <div className="ok">✓ {done}</div>}
+      {!canGenerate && !busy && !res && <div className="muted">Tip: choose provider Microsoft and enter endpoint + key + chat deployment to have AI generate fields; otherwise starter templates are suggested.</div>}
+      {res?.mode === 'suggestions' && !res.matches.length && <div className="flag">No starter template matched your description, and AI generation wasn't used{canGenerate ? ' (enter a chat deployment name such as gpt-4o)' : ' (needs Microsoft provider, endpoint, key and chat deployment)'}. Nothing was loaded.</div>}
       {err && <div className="flag">{err}</div>}
       {res?.mode === 'suggestions' && res.matches.map((m) => (
         <div key={m.name} className="card">
@@ -55,8 +64,8 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
           <div className="muted">{m.description}</div>
           {m.notice && <div className="muted">⚠ {m.notice}</div>}
           <div className="row">
-            <button className="small" onClick={() => onApply(normalizeFields(m.fields), 'replace')}>Replace fields</button>
-            <button className="small" onClick={() => onApply(normalizeFields(m.fields), 'append')}>Append</button>
+            <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'replace'); setDone('Loaded ' + m.fields.length + ' fields from ' + m.title + ' into section 2 (Fields).') }}>Replace fields</button>
+            <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'append'); setDone('Appended ' + m.fields.length + ' fields to section 2 (Fields).') }}>Append</button>
           </div>
         </div>
       ))}
@@ -72,8 +81,8 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
             </label>
           ))}
           <div className="row">
-            <button className="primary small" disabled={!chosen.length} onClick={() => onApply(chosen, 'replace')}>Replace fields ({chosen.length})</button>
-            <button className="small" disabled={!chosen.length} onClick={() => onApply(chosen, 'append')}>Append</button>
+            <button className="primary small" disabled={!chosen.length} onClick={() => { onApply(chosen, 'replace'); setDone('Loaded ' + chosen.length + ' fields into section 2 (Fields).') }}>Replace fields ({chosen.length})</button>
+            <button className="small" disabled={!chosen.length} onClick={() => { onApply(chosen, 'append'); setDone('Appended ' + chosen.length + ' fields to section 2 (Fields).') }}>Append</button>
           </div>
         </div>
       )}

@@ -39,6 +39,7 @@ export default function App() {
   const [apiKey, setApiKey] = useState('')
   const [provider, setProvider] = useState<'jev' | 'microsoft'>(() => (localStorage.getItem('pca.provider') as 'jev' | 'microsoft') || 'microsoft')
   const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
+  const [flash, setFlash] = useState(false)
   const [model, setModel] = useState(() => { const v = localStorage.getItem('pca.deployment'); return !v || v === 'Microsoft-Decision-1' ? 'Decision-1' : v })
   useEffect(() => { localStorage.setItem('pca.provider', provider); localStorage.setItem('pca.endpoint', endpoint); localStorage.setItem('pca.deployment', model) }, [provider, endpoint, model])
   const changeProvider = (p: 'jev' | 'microsoft') => { setProvider(p); setModel(p === 'jev' ? 'jev-latest' : 'Decision-1') }
@@ -132,11 +133,11 @@ export default function App() {
             endpoint={endpoint}
             apiKey={apiKey}
             canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
-            onApply={(fs, mode) => setFields((cur) => {
+            onApply={(fs, mode) => { setFlash(true); setTimeout(() => setFlash(false), 2500); document.getElementById('fields-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); setFields((cur) => {
               if (mode === 'replace') return fs
               const ids = new Set(cur.map((f) => f.id))
               return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
-            })}
+            }) }}
           />
         }
       />
@@ -146,8 +147,8 @@ export default function App() {
           <textarea className="mono big" value={transcript} onChange={(e) => setTranscript(e.target.value)} spellCheck={false} />
           <div className="row"><button className="small" onClick={doPreview}>Validate / preview</button><span className="muted">{preview}</span></div>
         </section>
-        <section>
-          <h2>2. Fields</h2>
+        <section id="fields-section" className={flash ? 'flash' : ''}>
+          <h2>2. Fields{flash && <span className="tag">Updated</span>}</h2>
           <div className="row wrap">
             <button className="small" onClick={() => loadTemplate('loan')}>Load loan sales template</button>
             <button className="small" onClick={() => loadTemplate('sales')}>Load sales template</button>

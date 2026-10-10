@@ -62,10 +62,12 @@ header .row input.narrow { width: 120px; }
 .check { color: #0f6cbd; font-weight: 700; }
 .tag { font-size: 11px; font-weight: 600; border: 1px solid #0f6cbd; background: #eef5fc; border-radius: 3px; padding: 0 5px; color: #0a4f8f; margin-left: 6px; }
 .gallery-note { margin-top: 6px; font-size: 12px; }
-.gen-side { background: #f7fbff; border: 1px dashed #0f6cbd; border-radius: 8px; padding: 9px 11px; max-height: 42vh; overflow-y: auto; }
+.gen-side { background: #f7fbff; border: 1px dashed #0f6cbd; border-radius: 8px; padding: 9px 11px; max-height: 70vh; overflow-y: auto; }
 .gen { display: flex; flex-direction: column; gap: 6px; }
 .gen p { margin: 0; }
 .gen textarea { min-height: 52px; resize: vertical; }
 .gen .row.wrap { margin: 0; }
 .gen input { min-width: 0; }
 @media (max-width: 1200px) { .gallery-body { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gen-side { max-height: none; } }
+
+.flash { outline: 2px solid #1a8f3c; outline-offset: 2px; border-radius: 6px; transition: outline .3s; }
