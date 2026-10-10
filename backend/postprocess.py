@@ -4,6 +4,21 @@ from entities import NONE, normalize_entity
 from models import FieldDef, FieldResult
 
 
+def _confidence(a: dict) -> float | None:
+    """Use the provider's confidence when present, else the top option probability."""
+    c = a.get("confidence")
+    if isinstance(c, (int, float)):
+        return c
+    p = a.get("probabilities")
+    if isinstance(p, dict):
+        vals = [v for v in p.values() if isinstance(v, (int, float))]
+        return max(vals) if vals else None
+    if isinstance(p, list):
+        vals = [v for v in p if isinstance(v, (int, float))]
+        return max(vals) if vals else None
+    return None
+
+
 def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, list[str]],
                   reference: datetime | None = None) -> tuple[list[FieldResult], list[str]]:
     results: list[FieldResult] = []
@@ -18,7 +33,7 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
                 r.review_reason = "No candidates found in transcript"
             else:
                 r.value = a.get("choice")
-                r.confidence = a.get("confidence")
+                r.confidence = _confidence(a)
                 r.probabilities = a.get("probabilities")
                 if r.value == NONE:
                     r.value = None
@@ -32,13 +47,13 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
         elif a is None:
             r.needs_review, r.review_reason = True, "No answer returned"
         elif f.kind == "noul":
-            r.value = r.probability = a.get("noul")
+            r.value = r.probability = a.get("noul", a.get("probability"))
             lo, hi = f.uncertain_band
             if r.probability is not None and lo <= r.probability <= hi:
                 r.needs_review, r.review_reason = True, f"Uncertain probability ({r.probability:.2f})"
         else:
             r.value = a.get("choice") if f.kind == "choice" else a.get("score")
-            r.confidence = a.get("confidence")
+            r.confidence = _confidence(a)
             r.probabilities = a.get("probabilities")
             r.legend = a.get("legend")
             if r.confidence is not None and r.confidence < f.min_confidence:

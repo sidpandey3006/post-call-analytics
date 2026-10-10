@@ -34,3 +34,7 @@ Users paste their own TypeSafe key; the backend only forwards it. Free Render in
 - Prebuilt sales template: "Load sales template". Presets live in browser localStorage.
 - Phones without a country code are returned as digits only (no E.164 `+`).
 - Calls over ~64k tokens are warned about, not chunked.
+
+## v2: Microsoft Decision-1 (Foundry)
+
+Pick **Microsoft Decision-1** in the header, then enter your Foundry resource endpoint (`https://<resource>.services.ai.azure.com`), the **deployment name** (used as `model`) and the resource API key (sent as the `api-key` header). Only Azure resource hosts are accepted. Calls go to `<endpoint>/providers/microsoft/v1/systemone`. Confidence falls back to the top option probability when the model returns none. Decision support only: do not use as the sole basis for credit or other consequential decisions about people.

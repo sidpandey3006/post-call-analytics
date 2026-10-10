@@ -32,8 +32,12 @@ class AnalyzeRequest(BaseModel):
     transcript: Any
     fields: list[FieldDef] = Field(min_length=1)
     context: dict[str, Any] | None = None
+    provider: Literal["jev", "microsoft"] = "jev"
+    # jev: model name (default jev-latest). microsoft: the Foundry deployment name.
     model: str = "jev-latest"
-    base_url: str = "https://api.typesafe.ai"
+    # microsoft only
+    endpoint: str | None = None
+    auth: Literal["api_key", "bearer"] = "api_key"
 
 
 class FieldResult(BaseModel):

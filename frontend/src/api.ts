@@ -29,6 +29,8 @@ export const analyze = (p: {
   transcript: unknown
   fields: FieldDef[]
   model: string
+  provider?: 'jev' | 'microsoft'
+  endpoint?: string
 }) => request<AnalyzeResponse>('/api/analyze', post(p))
 
 export const fetchTemplate = (name: 'loan' | 'sales') => request<FieldDef[]>(`/api/templates/${name}`)

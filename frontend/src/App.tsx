@@ -34,7 +34,11 @@ export default function App() {
   const [transcript, setTranscript] = useState(SAMPLE)
   const [fields, setFields] = useState<FieldDef[]>(() => { try { return normalizeFields(JSON.parse(localStorage.getItem('pca.fields') ?? '[]')) } catch { return [] } })
   const [apiKey, setApiKey] = useState('')
-  const [model, setModel] = useState('jev-latest')
+  const [provider, setProvider] = useState<'jev' | 'microsoft'>(() => (localStorage.getItem('pca.provider') as 'jev' | 'microsoft') || 'microsoft')
+  const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
+  const [model, setModel] = useState(() => localStorage.getItem('pca.deployment') ?? 'Microsoft-Decision-1')
+  useEffect(() => { localStorage.setItem('pca.provider', provider); localStorage.setItem('pca.endpoint', endpoint); localStorage.setItem('pca.deployment', model) }, [provider, endpoint, model])
+  const changeProvider = (p: 'jev' | 'microsoft') => { setProvider(p); setModel(p === 'jev' ? 'jev-latest' : 'Microsoft-Decision-1') }
   const [presets, setPresets] = useState<Presets>(loadPresets)
   const [preview, setPreview] = useState<string>('')
   const [error, setError] = useState('')
@@ -69,7 +73,7 @@ export default function App() {
   const run = async () => {
     setError(''); setLoading(true)
     try {
-      setResult(await analyze({ api_key: apiKey, transcript: parsed(), fields, model }))
+      setResult(await analyze({ api_key: apiKey, transcript: parsed(), fields, model, provider, endpoint: provider === 'microsoft' ? endpoint : undefined }))
     } catch (e) { setError(e instanceof Error ? e.message : String(e)) }
     finally { setLoading(false) }
   }
@@ -87,18 +91,24 @@ export default function App() {
     try { setFields(normalizeFields(JSON.parse(txt))) } catch { setError('Invalid fields JSON') }
   }
 
-  const canRun = apiKey && fields.length > 0 && !loading
+  const canRun = apiKey && fields.length > 0 && !loading && (provider === 'jev' || (endpoint && model))
 
   return (
     <div className="app">
       <header>
-        <h1>Post-call analytics <span className="muted">powered by Jev</span></h1>
-        <div className="row">
-          <input type="password" placeholder="TypeSafe API key (kept in memory only)" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" />
-          <input className="narrow" value={model} onChange={(e) => setModel(e.target.value)} title="model" />
+        <h1>Post-call analytics <span className="muted">{provider === 'microsoft' ? 'v2 · Microsoft Decision-1' : 'v1 · Jev'}</span></h1>
+        <div className="row wrap">
+          <select value={provider} onChange={(e) => changeProvider(e.target.value as 'jev' | 'microsoft')}>
+            <option value="microsoft">Microsoft Decision-1</option>
+            <option value="jev">Jev</option>
+          </select>
+          {provider === 'microsoft' && <input placeholder="Foundry endpoint https://<resource>.services.ai.azure.com" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />}
+          <input type="password" placeholder={provider === 'microsoft' ? 'Foundry API key (kept in memory only)' : 'TypeSafe API key (kept in memory only)'} value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" />
+          <input className="narrow" value={model} onChange={(e) => setModel(e.target.value)} title={provider === 'microsoft' ? 'Foundry deployment name' : 'model'} />
           <button className="primary" disabled={!canRun} onClick={run}>{loading ? 'Running…' : 'Run analysis'}</button>
         </div>
       </header>
+      {provider === 'microsoft' && fields.some((f) => /loan|bureau/i.test(f.id)) && <div className="muted banner">Decision support only: Microsoft-Decision-1 must not be the sole basis for credit or other consequential decisions about people. Keep human review.</div>}
       {error && <div className="flag banner">{error}</div>}
       <main>
         <section>
@@ -127,7 +137,7 @@ export default function App() {
           {result ? <Results data={result} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>
-      <footer>Built by Siddhartha Pandey · Powered by <a href="https://docs.typesafe.ai" target="_blank" rel="noreferrer">Jev</a></footer>
+      <footer>Built by Siddhartha Pandey · Powered by {provider === 'microsoft' ? <a href="https://ai.azure.com/catalog/models/Microsoft-Decision-1" target="_blank" rel="noreferrer">Microsoft Decision-1</a> : <a href="https://docs.typesafe.ai" target="_blank" rel="noreferrer">Jev</a>}</footer>
     </div>
   )
 }

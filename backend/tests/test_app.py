@@ -134,3 +134,22 @@ def test_templates_valid():
         qs, _ = build_questions(fields, "a@b.com 12 Oct 2026 $5 +14155550177")
         assert len(qs) == len(fields)
     assert client.get("/api/templates/nope").status_code == 404
+
+
+@respx.mock
+def test_microsoft_ok_no_confidence():
+    url = 'https://res.services.ai.azure.com/providers/microsoft/v1/systemone'
+    route = respx.post(url).mock(return_value=httpx.Response(200, json={'model': 'microsoft-decision-1', 'answers': {'urgent': {'type': 'noul', 'noul': 0.8}, 'email': {'type': 'choice', 'choice': 'a@b.com', 'probabilities': {'a@b.com': 0.9, 'none': 0.1}}}}))
+    p = _payload(); p.update(provider='microsoft', endpoint='https://res.services.ai.azure.com', model='my-deploy')
+    r = client.post('/api/analyze', json=p)
+    assert r.status_code == 200, r.text
+    assert r.json()['results'][1]['confidence'] == 0.9
+    h = route.calls[0].request.headers
+    assert h['api-key'] == 'sk-secret' and 'authorization' not in h
+    assert json.loads(route.calls[0].request.content)['model'] == 'my-deploy'
+
+
+def test_microsoft_rejects_non_azure_host():
+    p = _payload(); p.update(provider='microsoft', endpoint='https://evil.example.com', model='d')
+    assert client.post('/api/analyze', json=p).status_code == 400
+
