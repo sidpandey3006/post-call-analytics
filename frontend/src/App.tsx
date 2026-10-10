@@ -121,11 +121,10 @@ export default function App() {
           {provider === 'microsoft' && <input className="endpoint" placeholder="Foundry endpoint https://<resource>.services.ai.azure.com" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />}
           <input type="password" placeholder={provider === 'microsoft' ? 'Foundry API key (kept in memory only)' : 'TypeSafe API key (kept in memory only)'} value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" />
           <input className="narrow" value={model} onChange={(e) => setModel(e.target.value)} title={provider === 'microsoft' ? 'Foundry deployment name' : 'model'} />
-          <button className={"primary" + (nudge && canRun ? ' pulse' : '')} disabled={!canRun} onClick={run}>{loading ? 'Running…' : 'Run analysis'}</button>
         </div>
       </header>
       {provider === 'microsoft' && fields.some((f) => /loan|bureau/i.test(f.id)) && <div className="muted banner">Decision support only: Microsoft-Decision-1 must not be the sole basis for credit or other consequential decisions about people. Keep human review.</div>}
-      {nudge && <div className="ok banner">✓ Fields{' '}and sample transcript loaded. Next: {canRun ? <button className="primary small" onClick={run}>Run analysis</button> : <strong>enter your endpoint, API key and deployment in the header, then click Run analysis</strong>}</div>}
+      {nudge && <div className="ok banner">✓ Fields{' '}and sample transcript loaded. Next: click <strong>Run analysis</strong> in section 3 (Results){canRun ? '' : ' after entering your endpoint, API key and deployment in the header'}.</div>}
       {error && <div className="flag banner">{error}</div>}
       <ScenarioGallery
         scenarios={scenarios}
@@ -139,7 +138,7 @@ export default function App() {
             apiKey={apiKey}
             onActive={setGenActive}
             canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
-            onApply={(fs, mode, sample) => { setNudge(true); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.getElementById('fields-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); setFields((cur) => {
+            onApply={(fs, mode, sample) => { setNudge(true); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.querySelector('main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setFields((cur) => {
               if (mode === 'replace') return fs
               const ids = new Set(cur.map((f) => f.id))
               return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
@@ -148,8 +147,8 @@ export default function App() {
         }
       />
       <main>
-        <section>
-          <h2>1. Transcript JSON</h2>
+        <section className={flash ? 'flash' : ''}>
+          <h2>1. Transcript JSON{flash && <span className="tag">Updated</span>}</h2>
           <textarea className="mono big" value={transcript} onChange={(e) => setTranscript(e.target.value)} spellCheck={false} />
           <div className="row"><button className="small" onClick={doPreview}>Validate / preview</button><span className="muted">{preview}</span></div>
         </section>
@@ -171,6 +170,10 @@ export default function App() {
         </section>
         <section>
           <h2>3. Results</h2>
+          <div className="cta">
+            <button className={'primary' + (nudge && canRun ? ' pulse' : '')} disabled={!canRun} onClick={run}>{loading ? 'Running…' : '▶ Run analysis'}</button>
+            {!canRun && !loading && <span className="muted">{fields.length === 0 ? 'Add fields first.' : provider === 'microsoft' ? 'Enter endpoint, key and deployment in the header.' : 'Enter your API key in the header.'}</span>}
+          </div>
           {result ? <Results data={result} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>

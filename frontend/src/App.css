@@ -81,3 +81,5 @@ button.pulse { animation: pulse 1.2s infinite; }
 .gallery-body.focus .gen textarea { min-height: 90px; }
 .examples-collapsed { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding: 6px; border: 1px solid #dde1e6; border-radius: 8px; background: #f9fafb; }
 @media (max-width: 1200px) { .gallery-body.focus { grid-template-columns: 1fr; } }
+
+.cta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; position: sticky; top: 0; background: #f6f7f9; padding: 4px 0; z-index: 1; }
