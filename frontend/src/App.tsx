@@ -115,7 +115,7 @@ export default function App() {
             <option value="microsoft">Microsoft Decision-1</option>
             <option value="jev">Jev</option>
           </select>
-          {provider === 'microsoft' && <input placeholder="Foundry endpoint https://<resource>.services.ai.azure.com" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />}
+          {provider === 'microsoft' && <input className="endpoint" placeholder="Foundry endpoint https://<resource>.services.ai.azure.com" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />}
           <input type="password" placeholder={provider === 'microsoft' ? 'Foundry API key (kept in memory only)' : 'TypeSafe API key (kept in memory only)'} value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" />
           <input className="narrow" value={model} onChange={(e) => setModel(e.target.value)} title={provider === 'microsoft' ? 'Foundry deployment name' : 'model'} />
           <button className="primary" disabled={!canRun} onClick={run}>{loading ? 'Running…' : 'Run analysis'}</button>
@@ -123,15 +123,11 @@ export default function App() {
       </header>
       {provider === 'microsoft' && fields.some((f) => /loan|bureau/i.test(f.id)) && <div className="muted banner">Decision support only: Microsoft-Decision-1 must not be the sole basis for credit or other consequential decisions about people. Keep human review.</div>}
       {error && <div className="flag banner">{error}</div>}
-      <ScenarioGallery scenarios={scenarios} selected={scenario} onPick={pickScenario} />
-      <main>
-        <section>
-          <h2>1. Transcript JSON</h2>
-          <textarea className="mono big" value={transcript} onChange={(e) => setTranscript(e.target.value)} spellCheck={false} />
-          <div className="row"><button className="small" onClick={doPreview}>Validate / preview</button><span className="muted">{preview}</span></div>
-        </section>
-        <section>
-          <h2>2. ✨ Generate fields with AI <span className="muted">(new, optional)</span></h2>
+      <ScenarioGallery
+        scenarios={scenarios}
+        selected={scenario}
+        onPick={pickScenario}
+        extra={
           <GeneratePanel
             endpoint={endpoint}
             apiKey={apiKey}
@@ -142,9 +138,16 @@ export default function App() {
               return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
             })}
           />
+        }
+      />
+      <main>
+        <section>
+          <h2>1. Transcript JSON</h2>
+          <textarea className="mono big" value={transcript} onChange={(e) => setTranscript(e.target.value)} spellCheck={false} />
+          <div className="row"><button className="small" onClick={doPreview}>Validate / preview</button><span className="muted">{preview}</span></div>
         </section>
         <section>
-          <h2>3. Fields</h2>
+          <h2>2. Fields</h2>
           <div className="row wrap">
             <button className="small" onClick={() => loadTemplate('loan')}>Load loan sales template</button>
             <button className="small" onClick={() => loadTemplate('sales')}>Load sales template</button>
@@ -160,7 +163,7 @@ export default function App() {
           <FieldBuilder fields={fields} setFields={setFields} />
         </section>
         <section>
-          <h2>4. Results</h2>
+          <h2>3. Results</h2>
           {result ? <Results data={result} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>

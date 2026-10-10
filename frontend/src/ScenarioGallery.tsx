@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react'
 import type { Scenario } from './api'
 
-type Props = { scenarios: Scenario[]; selected: string; onPick: (s: Scenario) => void }
+type Props = { scenarios: Scenario[]; selected: string; onPick: (s: Scenario) => void; extra?: ReactNode }
 
-export function ScenarioGallery({ scenarios, selected, onPick }: Props) {
+export function ScenarioGallery({ scenarios, selected, onPick, extra }: Props) {
   if (!scenarios.length) return null
   return (
     <details className="gallery" open>
@@ -15,6 +16,7 @@ export function ScenarioGallery({ scenarios, selected, onPick }: Props) {
             <span className="tile-tags">{s.tags.map((t) => <span key={t} className="tag">{t}</span>)}</span>
           </button>
         ))}
+        {extra}
       </div>
       {scenarios.find((s) => s.name === selected) && (
         <div className="muted gallery-note">
