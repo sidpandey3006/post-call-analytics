@@ -40,7 +40,7 @@ export default function App() {
   const [provider, setProvider] = useState<'jev' | 'microsoft'>(() => (localStorage.getItem('pca.provider') as 'jev' | 'microsoft') || 'microsoft')
   const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
   const [flash, setFlash] = useState(false)
-  const [nudge, setNudge] = useState(false)
+  const [nudge, setNudge] = useState<false | 'both' | 'fields'>(false)
   const [genActive, setGenActive] = useState(false)
   const [model, setModel] = useState(() => { const v = localStorage.getItem('pca.deployment'); return !v || v === 'Microsoft-Decision-1' ? 'Decision-1' : v })
   useEffect(() => { localStorage.setItem('pca.provider', provider); localStorage.setItem('pca.endpoint', endpoint); localStorage.setItem('pca.deployment', model) }, [provider, endpoint, model])
@@ -124,7 +124,7 @@ export default function App() {
         </div>
       </header>
       {provider === 'microsoft' && fields.some((f) => /loan|bureau/i.test(f.id)) && <div className="muted banner">Decision support only: Microsoft-Decision-1 must not be the sole basis for credit or other consequential decisions about people. Keep human review.</div>}
-      {nudge && <div className="ok banner">✓ Fields{' '}and sample transcript loaded. Next: click <strong>Run analysis</strong> in section 3 (Results){canRun ? '' : ' after entering your endpoint, API key and deployment in the header'}.</div>}
+      {nudge && <div className="ok banner">{nudge === 'both' ? '✓ Fields and sample transcript loaded.' : '⚠ Fields loaded, but no sample transcript was available, so paste your own in section 1.'} Next: click <strong>Run analysis</strong> in section 3 (Results){canRun ? '' : ' after entering your endpoint, API key and deployment in the header'}.</div>}
       {error && <div className="flag banner">{error}</div>}
       <ScenarioGallery
         scenarios={scenarios}
@@ -138,7 +138,7 @@ export default function App() {
             apiKey={apiKey}
             onActive={setGenActive}
             canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
-            onApply={(fs, mode, sample) => { setNudge(true); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.querySelector('main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setFields((cur) => {
+            onApply={(fs, mode, sample) => { setNudge(sample && mode === 'replace' ? 'both' : 'fields'); setResult(null); if (sample && mode === 'replace') { setTranscript(JSON.stringify(sample, null, 2)); setScenario('') } setFlash(true); setTimeout(() => setFlash(false), 2500); document.querySelector('main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setFields((cur) => {
               if (mode === 'replace') return fs
               const ids = new Set(cur.map((f) => f.id))
               return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]

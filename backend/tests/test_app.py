@@ -249,3 +249,11 @@ def test_parse_sample():
     assert len(s['turns']) == 2 and normalize_transcript(s)[1] == []
     assert parse_sample('not json') is None
 
+
+
+def test_library_templates_have_samples():
+    lib = json.loads((Path(__file__).parent.parent / 'templates' / 'library.json').read_text(encoding='utf-8'))
+    for t in lib:
+        assert t.get('sample'), t['name']
+        assert normalize_transcript(t['sample'])[1] == []
+

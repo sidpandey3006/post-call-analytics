@@ -64,7 +64,52 @@
           "other": "Something else"
         }
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "support-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Thanks for calling Contoso support. This call is recorded. How can I help?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "My internet keeps dropping every evening, it's really frustrating."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "I'm sorry about that. Can I confirm the account holder's name and postcode?"
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "Yes, Priya Shah, postcode 560001."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "Thank you. I see a fault on your line. I have reset it remotely, please check now."
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "It seems to be working. Will it stay stable?"
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "If it drops again, call us and I will send an engineer. I have noted this on your case."
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "Okay, thanks. That was quick, I appreciate the help."
+        }
+      ]
+    }
   },
   {
     "name": "collections",
@@ -142,7 +187,52 @@
           "Courteous"
         ]
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "collections-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Hello, this is Alex from Fabrikam Finance. This call may be recorded. Am I speaking with Mr Rao?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "Yes, speaking."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "I'm calling about your overdue card payment of $320. Is this a good time to talk?"
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "Yes. I was travelling, I forgot to pay."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "I understand. Could you pay the amount today?"
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "I can pay it on 15 November. I will pay $320 by then."
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Thank you, I have noted a promise to pay $320 on 15 November. You will get an SMS reminder."
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "Fine. Thanks for being polite about it."
+        }
+      ]
+    }
   },
   {
     "name": "sales_qualification",
@@ -207,7 +297,52 @@
         "instructions": "What follow-up date was agreed?",
         "entity_type": "date"
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "sales_qualification-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Hi, this is Sam from Northwind Software. Do you have a few minutes to talk about our CRM?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "Sure, briefly."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "What tool are you using today to manage customers?"
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "Spreadsheets mostly. It's getting messy with a team of 25."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "Do you have a budget in mind and who decides on a purchase?"
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "About $5,000 a quarter, and I decide together with our CFO."
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Great. Can we schedule a demo on 20 November with both of you?"
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "Yes, send an invite to me."
+        }
+      ]
+    }
   },
   {
     "name": "appointments",
@@ -264,7 +399,52 @@
         "instructions": "What phone number did the caller give for contact?",
         "entity_type": "phone"
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "appointments-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Good morning, City Clinic appointments. How can I help?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "I'd like to book a check-up for next week."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "Certainly. Do you have a preferred day?"
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "Tuesday 18 November, in the morning if possible."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "I have 10 am on 18 November. Shall I book it?"
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "Yes please. You can reach me on 415-555-0166."
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Booked for 18 November at 10 am. You will receive an SMS confirmation."
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "Great, thank you."
+        }
+      ]
+    }
   },
   {
     "name": "retention",
@@ -319,7 +499,52 @@
           "other": "Something else"
         }
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "retention-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Thanks for calling Tailwind Mobile. How can I help?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "I want to cancel my plan. It's too expensive."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "I'm sorry to hear that. May I ask what you pay now and what would feel right?"
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "$60 a month. Another provider offers $40."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "I can offer you a plan at $42 a month with the same data, for 12 months."
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "Hmm, that's close. Okay, I will stay on that."
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Done, the new plan starts next month. Anything else?"
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "No, thanks for the offer."
+        }
+      ]
+    }
   },
   {
     "name": "retail_returns",
@@ -375,7 +600,52 @@
         "kind": "noul",
         "instructions": "The agent resolved the request before the call ended."
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "retail_returns-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Welcome to Adventure Works orders. How can I help?"
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "My jacket arrived in the wrong size. Order 48213. I want to return it."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "No problem. Returns are free within 30 days. Would you like a refund or an exchange?"
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "An exchange for a large, please."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "I have created a return label and will ship the large once we receive the jacket. It should arrive in about five days."
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "Okay. Can you email the label to me?"
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Yes, I have sent it to your email on file."
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "Got it, thanks, that was easy."
+        }
+      ]
+    }
   },
   {
     "name": "qa_compliance",
@@ -440,7 +710,52 @@
           "compliance": "Disclosures and policy"
         }
       }
-    ]
+    ],
+    "sample": {
+      "call_id": "qa_compliance-demo-1",
+      "turns": [
+        {
+          "speaker": "agent",
+          "start": 0,
+          "text": "Thank you for calling Litware Bank. This call is recorded for quality. My name is Dana."
+        },
+        {
+          "speaker": "customer",
+          "start": 6,
+          "text": "Hi, I'd like to check why I was charged a fee."
+        },
+        {
+          "speaker": "agent",
+          "start": 12,
+          "text": "Let me verify you first. Please confirm your date of birth."
+        },
+        {
+          "speaker": "customer",
+          "start": 18,
+          "text": "It's 2 June 1985."
+        },
+        {
+          "speaker": "agent",
+          "start": 24,
+          "text": "Thank you. The $12 fee is a monthly maintenance charge. I can waive it this time."
+        },
+        {
+          "speaker": "customer",
+          "start": 30,
+          "text": "That would be great."
+        },
+        {
+          "speaker": "agent",
+          "start": 36,
+          "text": "Done. Is there anything else I can help with? Thank you for calling Litware Bank."
+        },
+        {
+          "speaker": "customer",
+          "start": 42,
+          "text": "No, thank you."
+        }
+      ]
+    }
   },
   {
     "name": "auto_dealership",
