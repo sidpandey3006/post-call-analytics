@@ -13,7 +13,7 @@ export function ScenarioGallery({ scenarios, selected, onPick, extra }: Props) {
           <button key={s.name} className={`tile${selected === s.name ? ' on' : ''}`} aria-pressed={selected === s.name} onClick={() => onPick(s)} title={s.description}>
             <span className="tile-title">{selected === s.name && <span className="check">✓ </span>}{s.title}</span>
             <span className="tile-pub">{s.publisher}</span>
-            <span className="tile-tags">{s.tags.map((t) => <span key={t} className="tag">{t}</span>)}{selected === s.name && <span className="tag sel">Selected</span>}</span>
+            <span className="tile-tags">{selected === s.name && <span className="tag sel">Selected</span>}</span>
           </button>
         ))}
         {extra}
