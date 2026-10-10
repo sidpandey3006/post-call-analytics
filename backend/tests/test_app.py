@@ -212,6 +212,12 @@ def test_library_templates_valid():
         build_questions([FieldDef(**f) for f in t["fields"]], "")
 
 
+def test_every_scenario_has_two_entity_fields():
+    data = json.loads((Path(__file__).parent.parent / "templates" / "scenarios.json").read_text(encoding="utf-8"))
+    for s in data:
+        assert sum(f["kind"] == "entity" for f in s["fields"]) >= 2, s["name"]
+
+
 def test_scenario_samples_have_no_warnings():
     data = json.loads((Path(__file__).parent.parent / "templates" / "scenarios.json").read_text(encoding="utf-8"))
     for s in data:

@@ -18,6 +18,8 @@
       {"id": "callback_arranged", "kind": "noul", "instructions": "The agent said a callback or follow-up contact was arranged."},
       {"id": "primary_next_step", "kind": "choice", "instructions": "What was the single main follow-up the agent agreed to?", "criteria": {"none": "Nothing further needed", "callback": "A callback was arranged", "branch_visit": "Customer to visit a branch", "replacement_or_delivery": "Something will be sent, such as a new card", "other": "Something else"}},
       {"id": "callback_phone", "kind": "entity", "instructions": "Which phone number did the customer give for a callback?", "entity_type": "phone"},
+      {"id": "disputed_amount", "kind": "entity", "instructions": "What disputed or problem charge amount was mentioned?", "entity_type": "amount"},
+      {"id": "replacement_card_date", "kind": "entity", "instructions": "By what date did the agent say the replacement card or resolution would arrive? Ignore the customer's date of birth.", "entity_type": "date"},
       {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the customer explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
     ],
     "sample": {"call_id": "bank-demo-1", "turns": [
@@ -25,7 +27,7 @@
       {"speaker": "customer", "start": 5, "text": "My debit card stopped working at the store and I see a charge of $240 that I did not make."},
       {"speaker": "agent", "start": 14, "text": "I'm sorry about that. First, for security, can you confirm your date of birth and the last four digits of your card?"},
       {"speaker": "customer", "start": 24, "text": "Sure, 14 March 1988 and 4521."},
-      {"speaker": "agent", "start": 31, "text": "Thank you, you are verified. I have blocked the card and opened a dispute for the $240 charge. A new card will arrive in five days."},
+      {"speaker": "agent", "start": 31, "text": "Thank you, you are verified. I have blocked the card and opened a dispute for the $240 charge. A new card will arrive by 20 November."},
       {"speaker": "customer", "start": 42, "text": "Great. Can someone call me when the dispute is decided? My number is 415-555-0123."},
       {"speaker": "agent", "start": 50, "text": "Yes, I have arranged a callback. Would you also like to hear about our travel rewards card?"},
       {"speaker": "customer", "start": 58, "text": "No thanks, not now. But thanks for the quick help, that was easy."}
@@ -115,15 +117,17 @@
       {"id": "next_action_owner", "kind": "choice", "instructions": "Who does the next step fall to, according to the agent?", "criteria": {"member": "The member", "plan": "The health plan", "provider": "A provider or third party", "none": "No next step", "not_stated": "Not stated"}},
       {"id": "transferred", "kind": "noul", "instructions": "The call was transferred to another person or department."},
       {"id": "member_stated_difficulty", "kind": "noul", "instructions": "The member explicitly said getting help was hard, slow or frustrating."},
-      {"id": "follow_up_date", "kind": "entity", "instructions": "What follow-up or decision date did the agent give?", "entity_type": "date"},
+      {"id": "follow_up_date", "kind": "entity", "instructions": "What follow-up or decision date did the agent give? Ignore the member's date of birth.", "entity_type": "date"},
+      {"id": "member_contact_phone", "kind": "entity", "instructions": "Which phone number did the member give for contact?", "entity_type": "phone"},
+      {"id": "claim_billed_amount", "kind": "entity", "instructions": "What billed or claim amount did the agent mention?", "entity_type": "amount"},
       {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the member explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
     ],
     "sample": {"call_id": "plan-demo-1", "turns": [
       {"speaker": "agent", "start": 0, "text": "Thank you for calling Adatum Health Plan member services. How can I help?"},
       {"speaker": "customer", "start": 5, "text": "I'm calling about a claim for my knee MRI. I called last week and nobody got back to me."},
       {"speaker": "agent", "start": 14, "text": "I'm sorry about that. Can I confirm your member ID and date of birth?"},
-      {"speaker": "customer", "start": 22, "text": "ID is AB123456 and I was born on 3 May 1975."},
-      {"speaker": "agent", "start": 30, "text": "Thank you, you are verified. The claim was received and is under review. You should have a decision by 20 October."},
+      {"speaker": "customer", "start": 22, "text": "ID is AB123456 and I was born on 3 May 1975. You can reach me at 212-555-0188."},
+      {"speaker": "agent", "start": 30, "text": "Thank you, you are verified. The claim for $1,850 was received and is under review. You should have a decision by 20 October."},
       {"speaker": "customer", "start": 40, "text": "That is a long time. I want to file a complaint about the delay."},
       {"speaker": "agent", "start": 47, "text": "I understand. I have logged a grievance for you now, and you can also file it online at the member portal under Appeals. You will receive a letter with the steps."},
       {"speaker": "customer", "start": 60, "text": "Okay. This has been frustrating, but thank you for explaining."}
@@ -208,6 +212,8 @@
       {"id": "difficulty_adjusted", "kind": "noul", "instructions": "The tutor changed the difficulty or approach after the learner struggled or asked."},
       {"id": "frustration_stated", "kind": "noul", "instructions": "The learner said they were confused, stuck or frustrated."},
       {"id": "goal_met_stated", "kind": "noul", "instructions": "The learner explicitly said their session goal was met."},
+      {"id": "next_session_date", "kind": "entity", "instructions": "What date was proposed for the next practice session?", "entity_type": "date"},
+      {"id": "learner_email", "kind": "entity", "instructions": "Which email address did the learner give for receiving notes?", "entity_type": "email"},
       {"id": "next_session_planned", "kind": "noul", "instructions": "The learner agreed to a next session, practice task or follow-up."},
       {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the learner explicitly say how they felt about the session?", "criteria": {"positive": "Explicitly said it was helpful or thanked the tutor", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
     ],
@@ -217,8 +223,8 @@
       {"speaker": "learner", "start": 14, "text": "I redesigned onboarding and activation went up by twenty percent."},
       {"speaker": "tutor", "start": 22, "text": "Good start. Next time state the baseline and the timeframe. Try again with those."},
       {"speaker": "learner", "start": 30, "text": "Activation was thirty percent and rose to thirty-six percent in two months."},
-      {"speaker": "tutor", "start": 38, "text": "Much better. Shall we practice a harder question about prioritization tomorrow?"},
-      {"speaker": "learner", "start": 45, "text": "Yes please. I got what I wanted from this session, and it was really helpful, thank you."}
+      {"speaker": "tutor", "start": 38, "text": "Much better. Shall we practice a harder question       about prioritization on 12 November?"},
+            {"speaker": "learner", "start": 45, "text": "Yes please, and email the notes to sam@example.com. I got what I wanted from this session, and it was really helpful, thank you."}
     ]}
   },
   {
