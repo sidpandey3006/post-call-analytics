@@ -153,3 +153,60 @@ def test_microsoft_rejects_non_azure_host():
     p = _payload(); p.update(provider='microsoft', endpoint='https://evil.example.com', model='d')
     assert client.post('/api/analyze', json=p).status_code == 400
 
+
+
+GEN_URL = "https://res.services.ai.azure.com/openai/deployments/gpt-4o/chat/completions"
+
+
+def _gen_payload():
+    return {"description": "Outbound loan reminder calls to verify the borrower and get a promise to pay",
+            "endpoint": "https://res.services.ai.azure.com", "api_key": "sk-secret", "chat_deployment": "gpt-4o"}
+
+
+def _chat(fields):
+    return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps({"fields": fields})}}], "usage": {"total_tokens": 5}})
+
+
+@respx.mock
+def test_generate_ok_and_rejects_invalid():
+    route = respx.post(GEN_URL).mock(return_value=_chat([
+        {"id": "ptp", "kind": "noul", "instructions": "Customer promises to pay.", "options": [], "levels": [], "entity_type": "none"},
+        {"id": "reason", "kind": "choice", "instructions": "Reason?", "options": [{"key": "a", "description": "x"}], "levels": [], "entity_type": "none"},
+        {"id": "ptp_date", "kind": "entity", "instructions": "Date?", "options": [], "levels": [], "entity_type": "date"},
+    ]))
+    r = client.post("/api/generate-fields", json=_gen_payload())
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["mode"] == "generated" and [f["id"] for f in d["fields"]] == ["ptp", "ptp_date"]
+    assert d["rejected"][0]["id"] == "reason"
+    assert "sk-secret" not in r.text
+    req = route.calls[0].request
+    assert req.headers["api-key"] == "sk-secret" and "api-version=2024-10-21" in str(req.url)
+    assert json.loads(req.content)["response_format"]["json_schema"]["strict"] is True
+
+
+@respx.mock
+def test_generate_all_invalid_422():
+    respx.post(GEN_URL).mock(return_value=_chat([{"id": "x", "kind": "score", "instructions": "q", "options": [], "levels": ["one"], "entity_type": "none"}]))
+    assert client.post("/api/generate-fields", json=_gen_payload()).status_code == 422
+
+
+def test_generate_rejects_bad_host_and_deployment():
+    p = _gen_payload(); p["endpoint"] = "https://evil.example.com"
+    assert client.post("/api/generate-fields", json=p).status_code == 400
+    p = _gen_payload(); p["chat_deployment"] = "../x?y"
+    assert client.post("/api/generate-fields", json=p).status_code == 400
+
+
+def test_generate_suggestions_without_credentials():
+    r = client.post("/api/generate-fields", json={"description": "collections calls for overdue payment reminders"})
+    d = r.json()
+    assert d["mode"] == "suggestions" and d["matches"][0]["name"] == "collections"
+
+
+def test_library_templates_valid():
+    from generator import LIBRARY
+    from models import FieldDef
+    from questions import build_questions
+    for t in json.loads(LIBRARY.read_text(encoding="utf-8")):
+        build_questions([FieldDef(**f) for f in t["fields"]], "")

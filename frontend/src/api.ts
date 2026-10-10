@@ -34,3 +34,16 @@ export const analyze = (p: {
 }) => request<AnalyzeResponse>('/api/analyze', post(p))
 
 export const fetchTemplate = (name: 'loan' | 'sales') => request<FieldDef[]>(`/api/templates/${name}`)
+
+export type Suggestion = { name: string; title: string; description: string; notice?: string | null; fields: FieldDef[] }
+export type GenerateResult =
+  | { mode: 'suggestions'; matches: Suggestion[] }
+  | { mode: 'generated'; fields: FieldDef[]; rejected: { id: string; reason: string }[]; warnings: string[] }
+
+export const generateFields = (p: {
+  description: string
+  endpoint?: string
+  api_key?: string
+  chat_deployment?: string
+  max_fields?: number
+}) => request<GenerateResult>('/api/generate-fields', post(p))

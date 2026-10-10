@@ -1,0 +1,98 @@
+[
+  {
+    "name": "support", "title": "Customer support resolution",
+    "description": "Inbound support calls: issue type, resolution, escalation, follow-up.",
+    "tags": ["support", "customer service", "helpdesk", "complaint", "resolution", "csat", "contact center"],
+    "fields": [
+      {"id": "issue_category", "kind": "choice", "instructions": "What main problem did the customer call about?", "criteria": {"billing": "Charges, invoices or payments", "technical": "Product or service not working", "account_access": "Login or account changes", "delivery": "Shipping or delivery", "other": "Anything else", "not_discussed": "No clear issue stated"}},
+      {"id": "resolved_on_call", "kind": "noul", "instructions": "The agent resolved the customer's issue before the call ended."},
+      {"id": "repeat_contact", "kind": "noul", "instructions": "The customer says they have contacted support about this same issue before."},
+      {"id": "escalation_requested", "kind": "noul", "instructions": "The customer explicitly asks for a supervisor or manager."},
+      {"id": "agent_empathy", "kind": "score", "instructions": "How clearly did the agent acknowledge the customer's concern in words?", "levels": ["No acknowledgement", "Minimal acknowledgement", "Adequate acknowledgement", "Clear, specific acknowledgement"]},
+      {"id": "next_step", "kind": "choice", "instructions": "What follow-up did the agent agree to?", "criteria": {"none": "No follow-up agreed", "callback": "Agent or customer will call back", "ticket_opened": "A ticket or case was created", "escalated": "Passed to another team", "other": "Something else"}}
+    ]
+  },
+  {
+    "name": "collections", "title": "Collections / payment reminder (compliance and outcomes)",
+    "description": "Overdue payment reminder calls: disclosures, promise to pay, callbacks. Operational QA only.",
+    "tags": ["collections", "debt", "recovery", "payment", "overdue", "reminder", "dues"],
+    "notice": "Operational QA only. Do not use outputs to automate account actions or legal escalation.",
+    "fields": [
+      {"id": "right_party_contact", "kind": "noul", "instructions": "The person on the call confirms they are the account holder."},
+      {"id": "identity_verified_before_debt", "kind": "noul", "instructions": "The agent verified the customer's identity before mentioning the amount owed."},
+      {"id": "required_disclosure_read", "kind": "noul", "instructions": "The agent read the required collections disclosure."},
+      {"id": "promise_to_pay", "kind": "noul", "instructions": "The customer explicitly commits to pay a specific amount or on a specific date."},
+      {"id": "ptp_amount", "kind": "entity", "instructions": "Which amount did the customer promise to pay?", "entity_type": "amount"},
+      {"id": "ptp_date", "kind": "entity", "instructions": "On which date did the customer promise to pay?", "entity_type": "date"},
+      {"id": "dispute_raised", "kind": "noul", "instructions": "The customer says they dispute the debt or its amount."},
+      {"id": "stated_reason", "kind": "choice", "instructions": "What reason did the customer state for non-payment?", "criteria": {"job_loss": "Loss of job or income", "medical": "Medical expense", "forgot": "Forgot or oversight", "dispute": "Disputes the charge", "other": "Another reason", "not_discussed": "No reason stated"}},
+      {"id": "agent_conduct", "kind": "score", "instructions": "How professional was the agent's language?", "levels": ["Abusive or threatening", "Pressuring", "Neutral", "Courteous"]}
+    ]
+  },
+  {
+    "name": "sales_qualification", "title": "Sales lead qualification",
+    "description": "Outbound or inbound sales: interest, budget, timeline, objections, next step.",
+    "tags": ["sales", "lead", "qualification", "prospect", "demo", "outbound", "bant"],
+    "fields": [
+      {"id": "customer_requested_info", "kind": "noul", "instructions": "The prospect explicitly asks for a demo, quote or more information."},
+      {"id": "budget_discussed", "kind": "noul", "instructions": "A budget or price range was stated by the prospect."},
+      {"id": "decision_maker", "kind": "noul", "instructions": "The prospect says they can make or approve the purchase."},
+      {"id": "timeline", "kind": "choice", "instructions": "When does the prospect say they plan to buy?", "criteria": {"immediate": "Now or this week", "within_quarter": "Within about 3 months", "later": "Later than 3 months", "not_discussed": "Not mentioned"}},
+      {"id": "objection", "kind": "choice", "instructions": "What main objection did the prospect state?", "criteria": {"price": "Cost or budget", "competitor": "Prefers or uses a competitor", "timing": "Not the right time", "need": "Does not need it", "none": "No objection stated"}},
+      {"id": "meeting_booked", "kind": "noul", "instructions": "A next meeting or demo was confirmed with a specific date or time."},
+      {"id": "next_step_date", "kind": "entity", "instructions": "What follow-up date was agreed?", "entity_type": "date"}
+    ]
+  },
+  {
+    "name": "appointments", "title": "Appointment booking and scheduling",
+    "description": "Clinic, service or sales appointment calls. Scheduling only, no triage.",
+    "tags": ["appointment", "booking", "scheduling", "reschedule", "clinic", "healthcare", "visit", "slot"],
+    "notice": "Scheduling and call quality only. Do not use for triage, diagnosis or clinical decisions.",
+    "fields": [
+      {"id": "call_intent", "kind": "choice", "instructions": "What did the caller want to do?", "criteria": {"book": "Book a new appointment", "reschedule": "Change an appointment", "cancel": "Cancel an appointment", "enquire": "Ask a question only", "other": "Something else"}},
+      {"id": "appointment_confirmed", "kind": "noul", "instructions": "A specific appointment date and time was confirmed on the call."},
+      {"id": "appointment_date", "kind": "entity", "instructions": "What appointment date was agreed?", "entity_type": "date"},
+      {"id": "identity_verified", "kind": "noul", "instructions": "The agent verified the caller's identity before sharing details."},
+      {"id": "reminder_consent", "kind": "noul", "instructions": "The caller agreed to receive reminders."},
+      {"id": "contact_phone", "kind": "entity", "instructions": "What phone number did the caller give for contact?", "entity_type": "phone"}
+    ]
+  },
+  {
+    "name": "retention", "title": "Churn and retention (telecom, subscriptions)",
+    "description": "Cancellation and retention calls: stated reason, offers made, outcome.",
+    "tags": ["churn", "retention", "cancel", "cancellation", "telecom", "subscription", "save"],
+    "fields": [
+      {"id": "cancel_requested", "kind": "noul", "instructions": "The customer explicitly asks to cancel the service."},
+      {"id": "stated_reason", "kind": "choice", "instructions": "What main reason did the customer state for leaving?", "criteria": {"price": "Cost", "service_quality": "Coverage or reliability", "competitor_offer": "Better offer elsewhere", "relocation": "Moving", "other": "Another reason", "not_discussed": "No reason stated"}},
+      {"id": "offer_made", "kind": "noul", "instructions": "The agent offered a discount, plan change or other incentive to stay."},
+      {"id": "offer_accepted", "kind": "noul", "instructions": "The customer explicitly accepts the retention offer."},
+      {"id": "outcome", "kind": "choice", "instructions": "What was the final outcome?", "criteria": {"retained": "Customer stays", "cancelled": "Cancellation processed", "undecided": "Customer will decide later", "other": "Something else"}}
+    ]
+  },
+  {
+    "name": "retail_returns", "title": "Retail orders and returns",
+    "description": "E-commerce support: order status, returns, refunds, delivery problems.",
+    "tags": ["retail", "ecommerce", "order", "return", "refund", "delivery", "shipping"],
+    "fields": [
+      {"id": "contact_reason", "kind": "choice", "instructions": "What did the customer contact support about?", "criteria": {"order_status": "Where is my order", "return": "Return an item", "refund": "Refund status", "wrong_or_damaged": "Wrong or damaged item", "cancel_order": "Cancel an order", "other": "Something else"}},
+      {"id": "refund_requested", "kind": "noul", "instructions": "The customer explicitly asks for a refund."},
+      {"id": "resolution_granted", "kind": "choice", "instructions": "What did the agent agree to provide?", "criteria": {"none": "Nothing", "refund": "A refund", "replacement": "A replacement", "store_credit": "Store credit", "other": "Something else"}},
+      {"id": "repeat_issue", "kind": "noul", "instructions": "The customer says this is a repeat problem."},
+      {"id": "resolved_on_call", "kind": "noul", "instructions": "The agent resolved the request before the call ended."}
+    ]
+  },
+  {
+    "name": "qa_compliance", "title": "Agent QA and compliance coaching",
+    "description": "Any contact-center call: greeting, disclosures, active listening, closing.",
+    "tags": ["qa", "quality", "compliance", "coaching", "agent", "audit", "script", "disclosure"],
+    "fields": [
+      {"id": "greeting_with_brand", "kind": "noul", "instructions": "The agent greeted the customer and stated the company name."},
+      {"id": "recording_notice_given", "kind": "noul", "instructions": "The agent told the customer the call is recorded."},
+      {"id": "required_disclosure_read", "kind": "noul", "instructions": "The agent read the mandatory script or disclosure."},
+      {"id": "customer_concern_acknowledged", "kind": "score", "instructions": "How well did the agent acknowledge the customer's stated concern?", "levels": ["Ignored", "Briefly acknowledged", "Acknowledged and responded", "Acknowledged, responded and confirmed"]},
+      {"id": "unauthorized_promise", "kind": "noul", "instructions": "The agent promised something outside policy, such as a guarantee."},
+      {"id": "proper_closing", "kind": "noul", "instructions": "The agent recapped next steps and asked if anything else was needed."},
+      {"id": "coaching_area", "kind": "choice", "instructions": "Which single area most needs coaching?", "criteria": {"none": "None apparent", "empathy": "Acknowledging the customer", "process": "Following process", "product_knowledge": "Product knowledge", "compliance": "Disclosures and policy"}}
+    ]
+  }
+]

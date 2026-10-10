@@ -1,6 +1,7 @@
 """Provider-agnostic call layer for System One style decision APIs (Jev, Microsoft-Decision-1)."""
 import asyncio
-from urllib.parse import urlparse
+import re
+from urllib.parse import quote, urlparse
 
 import httpx
 
@@ -73,6 +74,15 @@ async def _post(url: str, headers: dict, body: dict, retries: int = 2) -> dict:
 async def call_jev(api_key: str, body: dict) -> dict:
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     return await _post(f"{JEV_BASE}/v1/systemone", headers, body)
+
+
+async def call_azure_chat(credential: str, endpoint: str, deployment: str, body: dict) -> dict:
+    """Azure OpenAI-style chat completions (api-key auth only)."""
+    origin = validate_azure_endpoint(endpoint)
+    if not re.fullmatch(r"[A-Za-z0-9._-]{1,64}", deployment or ""):
+        raise ValueError("Chat deployment name may only contain letters, digits, '.', '_' and '-'")
+    url = f"{origin}/openai/deployments/{quote(deployment, safe='')}/chat/completions?api-version=2024-10-21"
+    return await _post(url, {"api-key": credential, "Content-Type": "application/json"}, body, retries=1)
 
 
 async def call_microsoft(credential: str, body: dict, endpoint: str, auth: str = "api_key") -> dict:

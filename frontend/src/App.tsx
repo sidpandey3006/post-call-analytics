@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { analyze, fetchTemplate, previewTranscript } from './api'
 import { FieldBuilder } from './FieldBuilder'
+import { GeneratePanel } from './GeneratePanel'
 import { Results } from './Results'
 import { normalizeFields } from './types'
 import type { AnalyzeResponse, FieldDef } from './types'
@@ -130,6 +131,16 @@ export default function App() {
             <button className="small" disabled={!fields.length} onClick={() => navigator.clipboard.writeText(JSON.stringify(fields, null, 2))}>Copy JSON</button>
             <button className="small" disabled={!fields.length} onClick={() => setFields([])}>Clear</button>
           </div>
+          <GeneratePanel
+            endpoint={endpoint}
+            apiKey={apiKey}
+            canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
+            onApply={(fs, mode) => setFields((cur) => {
+              if (mode === 'replace') return fs
+              const ids = new Set(cur.map((f) => f.id))
+              return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
+            })}
+          />
           <FieldBuilder fields={fields} setFields={setFields} />
         </section>
         <section>

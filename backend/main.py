@@ -5,10 +5,11 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from entities import NONE
-from providers import DecisionError, call_jev, call_microsoft
+from generator import build_chat_body, parse_generated, suggest_templates
+from providers import DecisionError, call_azure_chat, call_jev, call_microsoft
 from models import AnalyzeRequest, AnalyzeResponse
 from normalize import normalize_transcript, transcript_text
 from postprocess import build_results
@@ -54,6 +55,46 @@ def normalize_preview(req: PreviewRequest):
         raise HTTPException(400, str(e))
     return {"state": state, "warnings": warnings, "turns": len(state["turns"]),
             "approx_tokens": len(json.dumps(state)) // 4}
+
+
+class GenerateRequest(BaseModel):
+    description: str = Field(min_length=20, max_length=2000)
+    endpoint: str | None = None
+    api_key: str | None = None
+    chat_deployment: str | None = None
+    max_fields: int = Field(default=10, ge=3, le=15)
+
+
+@app.post("/api/generate-fields")
+async def generate_fields(req: GenerateRequest):
+    """With a Foundry chat deployment: generate fields. Otherwise: suggest curated templates."""
+    if not (req.endpoint and req.api_key and req.chat_deployment):
+        return {"mode": "suggestions", "matches": suggest_templates(req.description)}
+    try:
+        try:
+            raw = await call_azure_chat(req.api_key, req.endpoint, req.chat_deployment,
+                                        build_chat_body(req.description, req.max_fields))
+        except DecisionError as e:
+            # only fall back when the deployment doesn't support structured outputs
+            if e.status == 400 and ("json_schema" in e.message or "response_format" in e.message):
+                raw = await call_azure_chat(req.api_key, req.endpoint, req.chat_deployment,
+                                            build_chat_body(req.description, req.max_fields, strict=False))
+            else:
+                raise
+        content = raw["choices"][0]["message"]["content"]
+        fields, rejected, warnings = parse_generated(content, req.max_fields)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except (KeyError, IndexError, TypeError):
+        raise HTTPException(502, "Unexpected response from the chat deployment")
+    except DecisionError as e:
+        msg = e.message.replace("model field must be your Foundry deployment name (Foundry portal > Deployments), not the model name.",
+                                "chat deployment name must match a chat model deployment (e.g. gpt-4o) in your resource.")
+        raise HTTPException(e.status if 400 <= e.status < 600 else 502, msg)
+    if not fields:
+        raise HTTPException(422, f"No valid fields were generated. Rejected: {rejected}")
+    return {"mode": "generated", "fields": [f.model_dump() for f in fields], "rejected": rejected,
+            "warnings": warnings, "usage": raw.get("usage")}
 
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
