@@ -20,7 +20,6 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply, onActive
   const [err, setErr] = useState('')
   const [done, setDone] = useState('')
   const [res, setRes] = useState<GenerateResult | null>(null)
-  const [picked, setPicked] = useState<Record<string, boolean>>({})
 
   const go = async () => {
     setErr(''); setRes(null); setDone(''); setBusy(true)
@@ -32,16 +31,18 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply, onActive
         ...(useModel ? { endpoint, api_key: apiKey, chat_deployment: chat.trim() } : {}),
       })
       setRes(r)
+      if (r.mode === 'suggestions' && r.matches.length) {
+        const m = r.matches[0]
+        onApply(normalizeFields(m.fields), 'replace', m.sample)
+        setDone('Loaded ' + m.fields.length + ' fields' + (m.sample ? ' and a sample transcript' : '') + ' (closest starter: ' + m.title + '). Review them in section 2, then click Run analysis.')
+      }
       if (r.mode === 'generated') {
-        setPicked(Object.fromEntries(r.fields.map((f) => [f.id, true])))
         const fs = normalizeFields(r.fields)
         if (fs.length) { onApply(fs, 'replace', r.sample); setDone('Generated ' + fs.length + ' fields' + (r.sample ? ' and a sample transcript' : '') + ' and loaded them. Review them in section 2, then click Run analysis.') }
       }
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)) }
     finally { setBusy(false) }
   }
-
-  const chosen = res?.mode === 'generated' ? normalizeFields(res.fields.filter((f) => picked[f.id])) : []
 
   return (
     <div className="gen">
@@ -59,34 +60,8 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply, onActive
       {!canGenerate && !busy && !res && <div className="muted">Tip: choose provider Microsoft and enter endpoint + key + chat deployment to have AI generate fields; otherwise starter templates are suggested.</div>}
       {res?.mode === 'suggestions' && !res.matches.length && <div className="flag">No starter template matched your description, and AI generation wasn't used{canGenerate ? ' (enter a chat deployment name such as gpt-4o)' : ' (needs Microsoft provider, endpoint, key and chat deployment)'}. Nothing was loaded.</div>}
       {err && <div className="flag">{err}</div>}
-      {res?.mode === 'suggestions' && res.matches.map((m) => (
-        <div key={m.name} className="card">
-          <strong>{m.title}</strong> <span className="muted">{m.fields.length} fields</span>
-          <div className="muted">{m.description}</div>
-          {m.notice && <div className="muted">⚠ {m.notice}</div>}
-          <div className="row">
-            <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'replace', m.sample); setDone('Loaded ' + m.fields.length + ' fields' + (m.sample ? ' and a sample transcript' : '') + ' from ' + m.title + '. Review them in section 2, then click Run analysis.') }}>Replace fields</button>
-            <button className="small" onClick={() => { onApply(normalizeFields(m.fields), 'append'); setDone('Appended ' + m.fields.length + ' fields to section 2 (Fields).') }}>Append</button>
-          </div>
-        </div>
-      ))}
-      {res?.mode === 'generated' && (
-        <div>
-          {res.warnings.map((w) => <div key={w} className="muted">⚠ {w}</div>)}
-          {res.rejected.length > 0 && <div className="flag">Skipped: {res.rejected.map((r) => `${r.id} (${r.reason})`).join('; ')}</div>}
-          {res.fields.map((f) => (
-            <label key={f.id} className="card" style={{ display: 'block' }}>
-              <input type="checkbox" checked={!!picked[f.id]} onChange={(e) => setPicked({ ...picked, [f.id]: e.target.checked })} />{' '}
-              <strong>{f.id}</strong> <span className="muted">{f.kind}</span>
-              <div className="muted">{f.instructions}</div>
-            </label>
-          ))}
-          <div className="row">
-            <button className="primary small" disabled={!chosen.length} onClick={() => { onApply(chosen, 'replace'); setDone('Loaded ' + chosen.length + ' fields into section 2 (Fields).') }}>Replace fields ({chosen.length})</button>
-            <button className="small" disabled={!chosen.length} onClick={() => { onApply(chosen, 'append'); setDone('Appended ' + chosen.length + ' fields to section 2 (Fields).') }}>Append</button>
-          </div>
-        </div>
-      )}
+      {res?.mode === 'generated' && res.warnings.map((w) => <div key={w} className="muted">⚠ {w}</div>)}
+      {res?.mode === 'generated' && res.rejected.length > 0 && <div className="muted">Skipped {res.rejected.length} invalid field(s).</div>}
     </div>
   )
 }
