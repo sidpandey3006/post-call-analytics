@@ -12,7 +12,6 @@ type Props = {
 }
 
 export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props) {
-  const [open, setOpen] = useState(false)
   const [desc, setDesc] = useState('')
   const [chat, setChat] = useState(() => localStorage.getItem('pca.chatDeployment') ?? '')
   const [max, setMax] = useState(10)
@@ -36,13 +35,11 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
     finally { setBusy(false) }
   }
 
-  if (!open) return <button className="small" onClick={() => setOpen(true)}>✨ Generate from use case</button>
-
   const chosen = res?.mode === 'generated' ? normalizeFields(res.fields.filter((f) => picked[f.id])) : []
 
   return (
-    <div className="card gen">
-      <div className="row"><strong>Generate fields from your use case</strong><button className="small" onClick={() => setOpen(false)}>Close</button></div>
+    <div className="gen">
+      <p className="muted">Optional. Describe your use case and get a starting set of fields, then apply them to step 3.</p>
       <textarea rows={4} maxLength={2000} placeholder="Describe your use case and scenario, e.g. 'Inbound insurance renewal calls: check the customer was told the premium and renewal date, whether they agreed to renew, and any objections.'" value={desc} onChange={(e) => setDesc(e.target.value)} />
       <div className="row wrap">
         <input placeholder="Chat deployment (e.g. gpt-4o) — optional" value={chat} onChange={(e) => setChat(e.target.value)} />

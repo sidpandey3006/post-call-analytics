@@ -118,7 +118,20 @@ export default function App() {
           <div className="row"><button className="small" onClick={doPreview}>Validate / preview</button><span className="muted">{preview}</span></div>
         </section>
         <section>
-          <h2>2. Fields</h2>
+          <h2>2. ✨ Generate fields with AI <span className="muted">(new, optional)</span></h2>
+          <GeneratePanel
+            endpoint={endpoint}
+            apiKey={apiKey}
+            canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
+            onApply={(fs, mode) => setFields((cur) => {
+              if (mode === 'replace') return fs
+              const ids = new Set(cur.map((f) => f.id))
+              return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
+            })}
+          />
+        </section>
+        <section>
+          <h2>3. Fields</h2>
           <div className="row wrap">
             <button className="small" onClick={() => loadTemplate('loan')}>Load loan sales template</button>
             <button className="small" onClick={() => loadTemplate('sales')}>Load sales template</button>
@@ -131,20 +144,10 @@ export default function App() {
             <button className="small" disabled={!fields.length} onClick={() => navigator.clipboard.writeText(JSON.stringify(fields, null, 2))}>Copy JSON</button>
             <button className="small" disabled={!fields.length} onClick={() => setFields([])}>Clear</button>
           </div>
-          <GeneratePanel
-            endpoint={endpoint}
-            apiKey={apiKey}
-            canGenerate={provider === 'microsoft' && !!endpoint && !!apiKey}
-            onApply={(fs, mode) => setFields((cur) => {
-              if (mode === 'replace') return fs
-              const ids = new Set(cur.map((f) => f.id))
-              return [...cur, ...fs.map((f) => (ids.has(f.id) ? { ...f, id: `${f.id}_2` } : f))]
-            })}
-          />
           <FieldBuilder fields={fields} setFields={setFields} />
         </section>
         <section>
-          <h2>3. Results</h2>
+          <h2>4. Results</h2>
           {result ? <Results data={result} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>
