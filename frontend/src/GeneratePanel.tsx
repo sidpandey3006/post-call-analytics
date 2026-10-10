@@ -38,7 +38,7 @@ export function GeneratePanel({ endpoint, apiKey, canGenerate, onApply }: Props)
   const chosen = res?.mode === 'generated' ? normalizeFields(res.fields.filter((f) => picked[f.id])) : []
 
   return (
-    <div className="gen tile-gen">
+    <div className="gen">
       <div className="tile-title">✨ Generate fields with AI <span className="tag">New</span></div>
       <p className="muted">Describe your use case to get a starting set of fields, loaded into the Fields panel.</p>
       <textarea rows={3} maxLength={2000} placeholder="e.g. Inbound insurance renewal calls: was the premium and renewal date explained, did the customer agree to renew, and any objections." value={desc} onChange={(e) => setDesc(e.target.value)} />
