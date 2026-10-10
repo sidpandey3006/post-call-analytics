@@ -57,6 +57,15 @@ def build_chat_body(description: str, max_fields: int, strict: bool = True) -> d
             "temperature": 0.2, "max_tokens": 4500, "response_format": rf}
 
 
+def build_sample_body(description: str, fields: list) -> dict:
+    spec = "\n".join(f"- {f.id} ({f.kind}{'/' + f.entity_type if f.entity_type else ''}): {f.instructions}" for f in fields)
+    user = (f"Write a realistic 8-14 turn call between an agent and a customer for this use case, as JSON {{\"sample_transcript\": [{{\"speaker\": \"agent\"|\"customer\", \"text\": \"...\"}}]}}. "
+            "Include the literal values for any entity fields (phone like 415-555-0123, date like 12 November, amount like $1,200, email like name@example.com). Fictional data only.\n"
+            f"<scenario>\n{description}\n</scenario>\nFields to make answerable:\n{spec}")
+    return {"messages": [{"role": "user", "content": user}], "temperature": 0.5, "max_tokens": 2000,
+            "response_format": {"type": "json_object"}}
+
+
 def _clean(s: str, n: int) -> str:
     return re.sub(r"[\x00-\x08\x0b-\x1f]", "", str(s)).strip()[:n]
 

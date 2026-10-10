@@ -4,7 +4,7 @@ body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7f9; color
 header { display: flex; justify-content: space-between; align-items: center; padding: 4px 12px; background: #fff; border-bottom: 1px solid #dde1e6; gap: 8px; flex-wrap: wrap; }
 header h1 { font-size: 15px; margin: 0; white-space: nowrap; }
 h2 { font-size: 14px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: #555; }
-main { height: max(560px, calc(100vh - 90px)); display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 12px; padding: 12px; overflow: hidden; }
+main { height: max(520px, calc(100vh - 60px)); display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 12px; padding: 12px; overflow: hidden; }
 section { overflow-y: auto; padding-right: 4px; }
 input, textarea, select, button { font: inherit; padding: 6px 8px; border: 1px solid #c8ced6; border-radius: 6px; background: #fff; }
 input, textarea { width: 100%; }
@@ -62,7 +62,7 @@ header .row input.narrow { width: 120px; }
 .check { color: #0f6cbd; font-weight: 700; }
 .tag { font-size: 11px; font-weight: 600; border: 1px solid #0f6cbd; background: #eef5fc; border-radius: 3px; padding: 0 5px; color: #0a4f8f; margin-left: 6px; }
 .gallery-note { margin-top: 6px; font-size: 12px; }
-.gen-side { background: #f7fbff; border: 1px dashed #0f6cbd; border-radius: 8px; padding: 9px 11px; max-height: 70vh; overflow-y: auto; }
+.gen-side { background: #f7fbff; border: 1px dashed #0f6cbd; border-radius: 8px; padding: 9px 11px; max-height: 300px; overflow-y: auto; }
 .gen { display: flex; flex-direction: column; gap: 6px; }
 .gen p { margin: 0; }
 .gen textarea { min-height: 52px; resize: vertical; }
