@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { analyze, fetchTemplate, previewTranscript } from './api'
+import { analyze, fetchScenarios, fetchTemplate, previewTranscript } from './api'
+import type { Scenario } from './api'
 import { FieldBuilder } from './FieldBuilder'
+import { ScenarioGallery } from './ScenarioGallery'
 import { GeneratePanel } from './GeneratePanel'
 import { Results } from './Results'
 import { normalizeFields } from './types'
@@ -45,7 +47,17 @@ export default function App() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
+  const [scenarios, setScenarios] = useState<Scenario[]>([])
+  const [scenario, setScenario] = useState('')
 
+  useEffect(() => { fetchScenarios().then(setScenarios).catch(() => {}) }, [])
+
+  const pickScenario = (s: Scenario) => {
+    setScenario(s.name)
+    setFields(normalizeFields(s.fields))
+    setTranscript(JSON.stringify(s.sample, null, 2))
+    setResult(null); setPreview(''); setError('')
+  }
   useEffect(() => { localStorage.setItem('pca.fields', JSON.stringify(fields)) }, [fields])
 
   // Start with the loan template until the user has had it applied once and chosen otherwise
@@ -111,6 +123,7 @@ export default function App() {
       </header>
       {provider === 'microsoft' && fields.some((f) => /loan|bureau/i.test(f.id)) && <div className="muted banner">Decision support only: Microsoft-Decision-1 must not be the sole basis for credit or other consequential decisions about people. Keep human review.</div>}
       {error && <div className="flag banner">{error}</div>}
+      <ScenarioGallery scenarios={scenarios} selected={scenario} onPick={pickScenario} />
       <main>
         <section>
           <h2>1. Transcript JSON</h2>

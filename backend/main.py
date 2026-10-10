@@ -40,6 +40,11 @@ def health():
 TEMPLATE_FILES = {"loan": "loan.json", "sales": "sales.json"}
 
 
+@app.get("/api/scenarios")
+def list_scenarios():
+    return json.loads((TEMPLATES / "scenarios.json").read_text(encoding="utf-8"))
+
+
 @app.get("/api/templates/{name}")
 def get_template(name: str):
     if name not in TEMPLATE_FILES:

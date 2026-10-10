@@ -42,3 +42,7 @@ Pick **Microsoft Decision-1** in the header, then enter your Foundry resource en
 ### Generate fields from a use case
 
 Click **Generate from use case** in the Fields panel and describe your scenario. With an Azure chat deployment (e.g. gpt-4o on the same Foundry resource, entered as *Chat deployment*; API-key auth only) fields are generated with a strict JSON schema, validated server-side, and shown for review before you Replace or Append. Invalid fields are skipped with reasons. Without a chat deployment (or on Jev), the closest curated starter templates (`backend/templates/library.json`) are suggested. The generator avoids eligibility, fraud, hiring-suitability and triage style fields.
+
+### Example scenarios
+
+The gallery above the workspace offers 8 ready-made voice scenarios (retail banking, insurance claims, patient access, health-plan member services, airline and travel, travel concierge, AI tutor, recruiting). Click one to load its fields and a sample call, then edit. Definitions live in `backend/templates/scenarios.json`; each field is explicit-evidence based and satisfaction is captured as a choice of what the customer explicitly said. Scenarios in sensitive domains are operational analytics only.

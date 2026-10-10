@@ -41,3 +41,15 @@ button.icon { padding: 2px 6px; border: none; background: none; color: #888; }
 footer { padding: 6px 16px; text-align: center; font-size: 12px; color: #6b7280; background: #fff; border-top: 1px solid #dde1e6; }
 footer a { color: #2f5bea; }
 @media (max-width: 1100px) { main { grid-template-columns: 1fr; overflow: auto; } textarea.big { height: 300px; } }
+
+.gallery { background: #fff; border-bottom: 1px solid #dde1e6; padding: 8px 16px; }
+.gallery summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 8px; max-height: 190px; overflow-y: auto; }
+.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; background: #f4f4f4; border: 1px solid #d0d0d0; border-radius: 8px; padding: 10px 12px; min-height: 92px; cursor: pointer; }
+.tile:hover { border-color: #0f6cbd; background: #eef5fc; }
+.tile.on { border-color: #0f6cbd; box-shadow: 0 0 0 1px #0f6cbd inset; background: #eef5fc; }
+.tile-title { font-weight: 600; font-size: 14px; }
+.tile-pub { font-size: 12px; color: #555; }
+.tile-tags { display: flex; gap: 4px; margin-top: auto; }
+.tag { font-size: 11px; font-weight: 600; border: 1px solid #d0d0d0; background: #fafafa; border-radius: 3px; padding: 0 5px; color: #444; }
+.gallery-note { margin-top: 6px; font-size: 12px; }

@@ -35,6 +35,18 @@ export const analyze = (p: {
 
 export const fetchTemplate = (name: 'loan' | 'sales') => request<FieldDef[]>(`/api/templates/${name}`)
 
+export type Scenario = {
+  name: string
+  title: string
+  publisher: string
+  tags: string[]
+  description: string
+  notice?: string
+  fields: FieldDef[]
+  sample: unknown
+}
+export const fetchScenarios = () => request<Scenario[]>('/api/scenarios')
+
 export type Suggestion = { name: string; title: string; description: string; notice?: string | null; fields: FieldDef[] }
 export type GenerateResult =
   | { mode: 'suggestions'; matches: Suggestion[] }

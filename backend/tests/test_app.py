@@ -210,3 +210,21 @@ def test_library_templates_valid():
     from questions import build_questions
     for t in json.loads(LIBRARY.read_text(encoding="utf-8")):
         build_questions([FieldDef(**f) for f in t["fields"]], "")
+
+
+def test_scenarios_valid_and_samples_support_entities():
+    from entities import find_candidates
+    from models import FieldDef
+    from normalize import normalize_transcript, transcript_text
+    from questions import build_questions
+    d = client.get("/api/scenarios").json()
+    assert len(d) == 8
+    for s in d:
+        fields = [FieldDef(**f) for f in s["fields"]]
+        assert len({f.id for f in fields}) == len(fields), s["name"]
+        state, _ = normalize_transcript(s["sample"], None)
+        text = transcript_text(state)
+        build_questions(fields, text)
+        for f in fields:
+            if f.kind == "entity":
+                assert find_candidates(f.entity_type, text), f"{s['name']}:{f.id} has no candidate in sample"

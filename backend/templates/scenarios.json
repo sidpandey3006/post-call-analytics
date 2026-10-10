@@ -1,0 +1,255 @@
+[
+  {
+    "name": "retail_banking",
+    "title": "Retail banking self-service",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Customers calling about balances, cards, disputes or loans: containment, resolution, cross-sell and satisfaction.",
+    "notice": "Operational analytics only. Do not use outputs for credit, fraud or eligibility decisions about a customer.",
+    "fields": [
+      {"id": "call_reason", "kind": "choice", "instructions": "What was the main reason the customer called?", "criteria": {"balance_or_transactions": "Balance, statement or transaction query", "card_issue": "Card blocked, lost or not working", "dispute": "Disputing a charge or transaction", "loan_enquiry": "Asking about a loan or credit product", "profile_update": "Changing address, phone or other details", "other": "Another reason", "not_discussed": "No clear reason stated"}},
+      {"id": "identity_verified_before_account_info", "kind": "noul", "instructions": "The agent explicitly said identity verification was completed before stating any account-specific balance, transaction or card details."},
+      {"id": "action_completed_on_call", "kind": "noul", "instructions": "The agent explicitly said the requested action was done on the call, such as a card blocked, a dispute opened or details updated."},
+      {"id": "resolved_without_human", "kind": "noul", "instructions": "The customer's request was handled by the virtual agent without a transfer to a human."},
+      {"id": "human_transfer_requested", "kind": "noul", "instructions": "The customer explicitly asked to speak to a human agent."},
+      {"id": "dispute_or_fraud_reported", "kind": "noul", "instructions": "The customer says a transaction on their account was unauthorized or incorrect."},
+      {"id": "cross_sell_offered", "kind": "noul", "instructions": "The agent offered an additional product or service."},
+      {"id": "cross_sell_accepted", "kind": "noul", "instructions": "The customer explicitly agreed to the additional product or service offered."},
+      {"id": "callback_arranged", "kind": "noul", "instructions": "The agent said a callback or follow-up contact was arranged."},
+      {"id": "primary_next_step", "kind": "choice", "instructions": "What was the single main follow-up the agent agreed to?", "criteria": {"none": "Nothing further needed", "callback": "A callback was arranged", "branch_visit": "Customer to visit a branch", "replacement_or_delivery": "Something will be sent, such as a new card", "other": "Something else"}},
+      {"id": "callback_phone", "kind": "entity", "instructions": "Which phone number did the customer give for a callback?", "entity_type": "phone"},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the customer explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "bank-demo-1", "turns": [
+      {"speaker": "agent", "start": 0, "text": "Welcome to Northwind Bank. This call is recorded. How can I help you today?"},
+      {"speaker": "customer", "start": 5, "text": "My debit card stopped working at the store and I see a charge of $240 that I did not make."},
+      {"speaker": "agent", "start": 14, "text": "I'm sorry about that. First, for security, can you confirm your date of birth and the last four digits of your card?"},
+      {"speaker": "customer", "start": 24, "text": "Sure, 14 March 1988 and 4521."},
+      {"speaker": "agent", "start": 31, "text": "Thank you, you are verified. I have blocked the card and opened a dispute for the $240 charge. A new card will arrive in five days."},
+      {"speaker": "customer", "start": 42, "text": "Great. Can someone call me when the dispute is decided? My number is 415-555-0123."},
+      {"speaker": "agent", "start": 50, "text": "Yes, I have arranged a callback. Would you also like to hear about our travel rewards card?"},
+      {"speaker": "customer", "start": 58, "text": "No thanks, not now. But thanks for the quick help, that was easy."}
+    ]}
+  },
+  {
+    "name": "insurance_claims",
+    "title": "Insurance claims and policy servicing",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "First notice of loss, claim status and policy changes: intake, resolution, complaints and satisfaction.",
+    "notice": "Operational analytics only. Do not use outputs to decide claim validity, fraud, severity or coverage.",
+    "fields": [
+      {"id": "call_type", "kind": "choice", "instructions": "What was the main purpose of the call?", "criteria": {"new_claim": "Reporting a new loss", "claim_status": "Checking on an existing claim", "policy_change": "Changing or renewing a policy", "billing": "Premium or payment question", "cancellation": "Cancelling a policy", "other": "Something else"}},
+      {"id": "identity_verified", "kind": "noul", "instructions": "The agent explicitly said the caller was verified before discussing the policy or claim."},
+      {"id": "incident_date", "kind": "entity", "instructions": "On which date did the customer say the incident happened?", "entity_type": "date"},
+      {"id": "claim_amount_stated", "kind": "entity", "instructions": "What damage or claim amount did the customer state?", "entity_type": "amount"},
+      {"id": "claim_created", "kind": "noul", "instructions": "The agent explicitly said a claim was created or opened."},
+      {"id": "claim_reference_provided", "kind": "noul", "instructions": "The agent gave the customer a claim or reference number."},
+      {"id": "documents_requested", "kind": "noul", "instructions": "The agent told the customer which documents or evidence are needed."},
+      {"id": "status_communicated", "kind": "choice", "instructions": "What claim status did the agent communicate?", "criteria": {"status_not_stated": "No claim status was given", "created": "Claim created or received", "under_review": "Under review", "awaiting_documents": "Waiting on customer documents", "approved_or_paid": "Approved or paid", "declined": "Declined"}},
+      {"id": "next_action_owner", "kind": "choice", "instructions": "Who does the next step fall to, according to the agent?", "criteria": {"customer": "The customer", "insurer": "The insurer or adjuster", "both": "Both parties", "none": "No next step", "not_stated": "Not stated"}},
+      {"id": "timeline_given", "kind": "noul", "instructions": "The agent gave the customer an expected timeframe for the next step."},
+      {"id": "complaint_or_escalation", "kind": "noul", "instructions": "The customer made a complaint, asked for a supervisor, or mentioned a regulator or legal action."},
+      {"id": "resolved_on_call", "kind": "noul", "instructions": "The customer's request was completed on this call."},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the customer explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "ins-demo-1", "turns": [
+      {"speaker": "agent", "start": 0, "text": "Thank you for calling Contoso Insurance. How can I help?"},
+      {"speaker": "customer", "start": 4, "text": "I need to report an accident. Someone hit my parked car on 2 October."},
+      {"speaker": "agent", "start": 12, "text": "I'm sorry to hear that. First I need to verify you. Can I have your policy holder name and date of birth?"},
+      {"speaker": "customer", "start": 22, "text": "Priya Nair, 9 July 1990."},
+      {"speaker": "agent", "start": 28, "text": "Thank you, you are verified. Was anyone injured, and do you have an estimate of the damage?"},
+      {"speaker": "customer", "start": 36, "text": "No injuries. The repair shop says about $1,800."},
+      {"speaker": "agent", "start": 44, "text": "I have opened your claim and your claim number is CL-48213. Please upload photos and the police report. An adjuster will contact you within two business days."},
+      {"speaker": "customer", "start": 58, "text": "Okay, that's clear. Thanks, this was much easier than I expected."}
+    ]}
+  },
+  {
+    "name": "patient_access",
+    "title": "Patient access and scheduling",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Booking, rescheduling and cancelling appointments: scheduling outcomes, verification, safe routing and patient experience.",
+    "notice": "Scheduling and call quality only. Not for triage, diagnosis or clinical decisions. Minimise and protect health information.",
+    "fields": [
+      {"id": "call_intent", "kind": "choice", "instructions": "What did the caller want to do?", "criteria": {"book": "Book a new appointment", "reschedule": "Change an appointment", "cancel": "Cancel an appointment", "refill_or_results": "Ask about a refill or results", "billing_or_insurance": "Billing or insurance question", "other": "Something else"}},
+      {"id": "scheduling_outcome", "kind": "choice", "instructions": "What was the scheduling outcome of the call?", "criteria": {"booked": "New appointment booked", "rescheduled": "Appointment rescheduled", "cancelled": "Appointment cancelled", "no_slot_available": "No suitable slot was available", "referred": "Caller was referred elsewhere", "unresolved": "Not resolved", "not_applicable": "No scheduling request"}},
+      {"id": "identity_verified", "kind": "noul", "instructions": "The agent explicitly said the caller was verified before sharing appointment or patient details."},
+      {"id": "appointment_confirmed", "kind": "noul", "instructions": "The agent explicitly confirmed a booked appointment."},
+      {"id": "appointment_date", "kind": "entity", "instructions": "Which appointment date was agreed?", "entity_type": "date"},
+      {"id": "caller_requested_urgent_care", "kind": "noul", "instructions": "The caller explicitly asked for urgent or same-day care, or said they cannot wait."},
+      {"id": "agent_referred_to_emergency_or_staff", "kind": "noul", "instructions": "The agent explicitly directed the caller to emergency services, a nurse line or clinical staff."},
+      {"id": "insurance_details_collected", "kind": "noul", "instructions": "The agent collected or confirmed the patient's insurance details."},
+      {"id": "waitlist_or_alternative_offered", "kind": "noul", "instructions": "The agent offered a waitlist, a different slot or another provider when the first choice was unavailable."},
+      {"id": "reminder_consent", "kind": "noul", "instructions": "The caller explicitly agreed to receive appointment reminders."},
+      {"id": "contact_phone", "kind": "entity", "instructions": "Which phone number did the caller give for reminders?", "entity_type": "phone"},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the caller explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "patient-demo-1", "turns": [
+      {"speaker": "agent", "start": 0, "text": "Thank you for calling Fabrikam Clinic. How can I help you today?"},
+      {"speaker": "customer", "start": 4, "text": "I'd like to book a check-up with Dr. Rao, sometime next week."},
+      {"speaker": "agent", "start": 11, "text": "Of course. Can I have your full name and date of birth to find your record?"},
+      {"speaker": "customer", "start": 18, "text": "Arjun Mehta, 22 January 1984."},
+      {"speaker": "agent", "start": 25, "text": "Thank you, you are verified. Dr. Rao has 3 pm on 15 October. Does that work?"},
+      {"speaker": "customer", "start": 33, "text": "Yes, that works. Please send me a reminder at 206-555-0148."},
+      {"speaker": "agent", "start": 41, "text": "Done. You are booked for 15 October at 3 pm and you will get a text reminder. Is your insurance still with Contoso Health?"},
+      {"speaker": "customer", "start": 52, "text": "Yes it is. Thanks, that was quick and simple."}
+    ]}
+  },
+  {
+    "name": "health_plan_member",
+    "title": "Health-plan member services",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Member calls about benefits, claims, ID cards, provider search and prior authorization: first-call resolution, compliance and effort.",
+    "notice": "Operational analytics only. Do not use outputs to decide coverage, authorization or appeals.",
+    "fields": [
+      {"id": "call_reason", "kind": "choice", "instructions": "What was the main reason the member called?", "criteria": {"benefits": "Coverage or benefits question", "claim_status": "Status of a claim", "provider_search": "Finding a provider", "id_card": "ID card request or replacement", "prior_auth": "Prior authorization status", "billing": "Premium or billing", "other": "Something else"}},
+      {"id": "member_verified", "kind": "noul", "instructions": "The agent explicitly said the member was verified before sharing plan or claim details."},
+      {"id": "request_fulfilled", "kind": "noul", "instructions": "The agent explicitly provided the requested information or completed the requested action."},
+      {"id": "resolved_first_contact", "kind": "noul", "instructions": "The member's request was fully completed on this call without needing a callback or another contact."},
+      {"id": "repeat_contact_stated", "kind": "noul", "instructions": "The member said they had already contacted the plan about this same issue."},
+      {"id": "grievance_or_appeal_mentioned", "kind": "noul", "instructions": "The member said they want to file a complaint, grievance or appeal."},
+      {"id": "grievance_process_explained", "kind": "noul", "instructions": "The agent stated how or where the member can file a grievance or appeal."},
+      {"id": "grievance_logged", "kind": "noul", "instructions": "The agent said a grievance or complaint was logged on the call."},
+      {"id": "next_action_owner", "kind": "choice", "instructions": "Who does the next step fall to, according to the agent?", "criteria": {"member": "The member", "plan": "The health plan", "provider": "A provider or third party", "none": "No next step", "not_stated": "Not stated"}},
+      {"id": "transferred", "kind": "noul", "instructions": "The call was transferred to another person or department."},
+      {"id": "member_stated_difficulty", "kind": "noul", "instructions": "The member explicitly said getting help was hard, slow or frustrating."},
+      {"id": "follow_up_date", "kind": "entity", "instructions": "What follow-up or decision date did the agent give?", "entity_type": "date"},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the member explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "plan-demo-1", "turns": [
+      {"speaker": "agent", "start": 0, "text": "Thank you for calling Adatum Health Plan member services. How can I help?"},
+      {"speaker": "customer", "start": 5, "text": "I'm calling about a claim for my knee MRI. I called last week and nobody got back to me."},
+      {"speaker": "agent", "start": 14, "text": "I'm sorry about that. Can I confirm your member ID and date of birth?"},
+      {"speaker": "customer", "start": 22, "text": "ID is AB123456 and I was born on 3 May 1975."},
+      {"speaker": "agent", "start": 30, "text": "Thank you, you are verified. The claim was received and is under review. You should have a decision by 20 October."},
+      {"speaker": "customer", "start": 40, "text": "That is a long time. I want to file a complaint about the delay."},
+      {"speaker": "agent", "start": 47, "text": "I understand. I have logged a grievance for you now, and you can also file it online at the member portal under Appeals. You will receive a letter with the steps."},
+      {"speaker": "customer", "start": 60, "text": "Okay. This has been frustrating, but thank you for explaining."}
+    ]}
+  },
+  {
+    "name": "airline_travel",
+    "title": "Airline and travel servicing",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Changes, cancellations, disruptions and baggage: rebooking and refund outcomes, support offered, ancillary revenue and satisfaction.",
+    "fields": [
+      {"id": "call_reason", "kind": "choice", "instructions": "What was the main reason the customer called?", "criteria": {"change_booking": "Change flight or dates", "cancel_refund": "Cancel and ask for a refund", "disruption": "Delay or cancelled flight", "baggage": "Lost, delayed or damaged baggage", "check_in_or_seat": "Check-in, seat or upgrade", "other": "Something else"}},
+      {"id": "request_completed", "kind": "noul", "instructions": "The customer's main request was completed on this call."},
+      {"id": "rebooking_outcome", "kind": "choice", "instructions": "What happened with rebooking or changing the flight?", "criteria": {"not_applicable": "No rebooking was needed or discussed", "confirmed": "A new flight or date was confirmed", "offered_not_accepted": "Options were offered but not accepted", "unavailable": "No suitable option was available"}},
+      {"id": "affected_travel_date", "kind": "entity", "instructions": "What was the original or affected travel date the customer mentioned?", "entity_type": "date"},
+      {"id": "rebooked_travel_date", "kind": "entity", "instructions": "What new travel date did the agent confirm for the customer?", "entity_type": "date"},
+      {"id": "refund_outcome", "kind": "choice", "instructions": "What did the agent say about a refund?", "criteria": {"not_applicable": "Refund not discussed", "full_refund": "Full refund promised", "partial_or_credit": "Partial refund or travel credit offered", "denied": "Refund denied", "pending_review": "Needs further review"}},
+      {"id": "fee_or_fare_difference", "kind": "entity", "instructions": "What fee or fare difference amount did the agent quote?", "entity_type": "amount"},
+      {"id": "disruption_support_type", "kind": "choice", "instructions": "What disruption support did the agent offer?", "criteria": {"none": "None offered", "meal_voucher": "Meal voucher", "hotel": "Hotel accommodation", "cash_or_credit": "Cash compensation or travel credit", "other": "Something else"}},
+      {"id": "ancillary_offered", "kind": "noul", "instructions": "The agent offered a paid extra such as an upgrade, bag or seat."},
+      {"id": "ancillary_accepted", "kind": "noul", "instructions": "The customer explicitly agreed to buy the offered extra."},
+      {"id": "supervisor_requested", "kind": "noul", "instructions": "The customer asked for a supervisor or manager."},
+      {"id": "switch_or_public_complaint_stated", "kind": "noul", "instructions": "The customer said they would switch airlines or complain publicly."},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the customer explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "air-demo-1", "turns": [
+      {"speaker": "agent", "start": 0, "text": "Thank you for calling Tailwind Airlines. How can I help?"},
+      {"speaker": "customer", "start": 4, "text": "My flight on 18 October was cancelled. I need to get to Seattle as soon as possible."},
+      {"speaker": "agent", "start": 12, "text": "I'm sorry. I can rebook you on the 6 am flight on 19 October at no charge, and I can add a $15 meal voucher."},
+      {"speaker": "customer", "start": 23, "text": "The 19 October flight is fine. Thank you."},
+      {"speaker": "agent", "start": 29, "text": "You are confirmed. Would you like extra legroom for $39?"},
+      {"speaker": "customer", "start": 36, "text": "Yes, add that."},
+      {"speaker": "agent", "start": 41, "text": "Done. Your new itinerary will be emailed to you."},
+      {"speaker": "customer", "start": 47, "text": "Perfect, that was handled well. Thanks."}
+    ]}
+  },
+  {
+    "name": "travel_concierge",
+    "title": "Multilingual travel concierge",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Trip planning and bookings across languages: bookings made, language handling, upsell and traveller satisfaction.",
+    "fields": [
+      {"id": "chosen_language", "kind": "choice", "instructions": "Which language did the customer explicitly choose or mainly use for the conversation?", "criteria": {"english": "English", "spanish": "Spanish", "french": "French", "hindi": "Hindi", "other": "Another language", "no_preference_stated": "No language choice or clear main language"}},
+      {"id": "language_switch_requested", "kind": "noul", "instructions": "The customer or agent explicitly asked to switch to a different language."},
+      {"id": "explicit_misunderstanding", "kind": "noul", "instructions": "Either party explicitly said they did not understand something, or asked for it to be repeated or translated."},
+      {"id": "request_type", "kind": "choice", "instructions": "What did the customer mainly ask for help with?", "criteria": {"hotel": "Hotel or stay", "transport": "Flights, trains or transfers", "activities": "Tours or activities", "dining": "Restaurants", "itinerary": "Full itinerary planning", "other": "Something else"}},
+      {"id": "trip_start_date", "kind": "entity", "instructions": "What trip start date did the customer state?", "entity_type": "date"},
+      {"id": "budget_stated", "kind": "entity", "instructions": "What budget amount did the customer state?", "entity_type": "amount"},
+      {"id": "recommendation_accepted", "kind": "noul", "instructions": "The customer explicitly accepted at least one recommendation from the agent."},
+      {"id": "booking_confirmed", "kind": "noul", "instructions": "The agent explicitly confirmed a booking, not merely a request or a suggestion."},
+      {"id": "upsell_offered", "kind": "noul", "instructions": "The agent offered an additional paid service or upgrade."},
+      {"id": "upsell_accepted", "kind": "noul", "instructions": "The customer explicitly agreed to buy the additional paid service or upgrade."},
+      {"id": "human_requested", "kind": "noul", "instructions": "The customer explicitly asked for a human agent."},
+      {"id": "human_handoff_completed", "kind": "noul", "instructions": "The call was handed over to a human agent."},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the customer explicitly say how they felt about the call or the help they received?", "criteria": {"positive": "Explicitly satisfied or thankful for the help", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or complaining", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "concierge-demo-1", "turns": [
+      {"speaker": "customer", "start": 0, "text": "Hola, quiero planear un viaje a Lisboa, starting 5 November."},
+      {"speaker": "agent", "start": 6, "text": "Hola, con gusto. Would you prefer to continue in Spanish or English?"},
+      {"speaker": "customer", "start": 12, "text": "Spanish is fine. Mi presupuesto es de $2,500 para cuatro noches."},
+      {"speaker": "agent", "start": 19, "text": "Perfecto. Te recomiendo un hotel en Alfama por $140 la noche y un tour de comida por $60."},
+      {"speaker": "customer", "start": 29, "text": "Me gusta el hotel. Sí, resérvalo, y el tour también."},
+      {"speaker": "agent", "start": 36, "text": "Reservado. Tu hotel y el tour están confirmados. ¿Quieres añadir traslado desde el aeropuerto por $25?"},
+      {"speaker": "customer", "start": 45, "text": "No, gracias. Muchas gracias, muy buen servicio."}
+    ]}
+  },
+  {
+    "name": "ai_tutor",
+    "title": "AI tutor and role-play coach",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Tutoring and practice sessions: goal setting, practice, feedback, goal completion and learner satisfaction.",
+    "notice": "For improving the learning experience only. Do not use outputs to grade, rank or make decisions about learners.",
+    "fields": [
+      {"id": "session_type", "kind": "choice", "instructions": "What kind of session was this?", "criteria": {"concept_help": "Explaining a concept or answering questions", "practice_conversation": "Language or speaking practice", "interview_roleplay": "Interview or scenario role-play", "exam_prep": "Exam preparation", "other": "Something else"}},
+      {"id": "goal_stated", "kind": "noul", "instructions": "The learner stated a goal for the session."},
+      {"id": "learner_practiced", "kind": "noul", "instructions": "The learner attempted answers or role-play turns rather than only listening."},
+      {"id": "tutor_gave_feedback", "kind": "noul", "instructions": "The tutor gave specific feedback on something the learner said or answered."},
+      {"id": "learner_retried_after_feedback", "kind": "noul", "instructions": "The learner tried again, restated or applied the point after the tutor's feedback."},
+      {"id": "difficulty_adjusted", "kind": "noul", "instructions": "The tutor changed the difficulty or approach after the learner struggled or asked."},
+      {"id": "frustration_stated", "kind": "noul", "instructions": "The learner said they were confused, stuck or frustrated."},
+      {"id": "goal_met_stated", "kind": "noul", "instructions": "The learner explicitly said their session goal was met."},
+      {"id": "next_session_planned", "kind": "noul", "instructions": "The learner agreed to a next session, practice task or follow-up."},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the learner explicitly say how they felt about the session?", "criteria": {"positive": "Explicitly said it was helpful or thanked the tutor", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "tutor-demo-1", "turns": [
+      {"speaker": "learner", "start": 0, "text": "Hi, I want to practice a job interview for a product manager role."},
+      {"speaker": "tutor", "start": 5, "text": "Great, let's start. Tell me about a product you improved and how you measured success."},
+      {"speaker": "learner", "start": 14, "text": "I redesigned onboarding and activation went up by twenty percent."},
+      {"speaker": "tutor", "start": 22, "text": "Good start. Next time state the baseline and the timeframe. Try again with those."},
+      {"speaker": "learner", "start": 30, "text": "Activation was thirty percent and rose to thirty-six percent in two months."},
+      {"speaker": "tutor", "start": 38, "text": "Much better. Shall we practice a harder question about prioritization tomorrow?"},
+      {"speaker": "learner", "start": 45, "text": "Yes please. I got what I wanted from this session, and it was really helpful, thank you."}
+    ]}
+  },
+  {
+    "name": "recruiting_assessment",
+    "title": "Recruiting and employee assessment",
+    "publisher": "Microsoft",
+    "tags": ["Voice", "Preview"],
+    "description": "Recruiter screens and assessment calls: process quality, scheduling, consent and candidate experience. Not for scoring candidates.",
+    "notice": "Process and candidate-experience analytics only. Do not score, rank, screen out or infer traits about candidates or employees. Human decision-makers only.",
+    "fields": [
+      {"id": "recording_consent_obtained", "kind": "noul", "instructions": "The recruiter told the candidate the call is recorded or assessed and the candidate agreed."},
+      {"id": "role_explained", "kind": "noul", "instructions": "The recruiter described the role."},
+      {"id": "hiring_process_explained", "kind": "noul", "instructions": "The recruiter described the steps of the hiring process."},
+      {"id": "candidate_confirmed_interest", "kind": "noul", "instructions": "The candidate explicitly said they are interested in continuing."},
+      {"id": "candidate_questions_answered", "kind": "choice", "instructions": "Did the recruiter answer the questions the candidate asked?", "criteria": {"all": "Every candidate question was answered or a follow-up was promised", "some": "Some candidate questions were left unanswered", "none": "None of the candidate questions were answered", "no_questions": "The candidate asked no questions"}},
+      {"id": "next_step_scheduled", "kind": "noul", "instructions": "The recruiter confirmed a specific date and time for the next step."},
+      {"id": "next_step_date", "kind": "entity", "instructions": "Which date was agreed for the next step?", "entity_type": "date"},
+      {"id": "next_steps_communicated", "kind": "noul", "instructions": "The recruiter told the candidate what happens next and when."},
+      {"id": "prohibited_topic_raised_by_recruiter", "kind": "noul", "instructions": "The recruiter asked the candidate about a topic not allowed by policy, such as age, marital status, religion or health."},
+      {"id": "candidate_email", "kind": "entity", "instructions": "Which email address did the candidate give for follow-up?", "entity_type": "email"},
+      {"id": "customer_stated_satisfaction", "kind": "choice", "instructions": "Did the candidate explicitly say how they felt about the experience of the call?", "criteria": {"positive": "Explicitly said it was a good experience or thanked the recruiter", "neutral": "Explicit but neutral, such as 'okay'", "negative": "Explicitly dissatisfied or concerned", "mixed": "Both positive and negative statements", "not_stated": "No explicit statement"}}
+    ],
+    "sample": {"call_id": "recruit-demo-1", "turns": [
+      {"speaker": "recruiter", "start": 0, "text": "Hi Sam, this is Maya from Fabrikam. This call is recorded for quality. Is that okay with you?"},
+      {"speaker": "candidate", "start": 7, "text": "Yes, that's fine."},
+      {"speaker": "recruiter", "start": 10, "text": "Great. The role is Senior Data Analyst. The process is this screen, a technical interview, then a panel. Are you still interested?"},
+      {"speaker": "candidate", "start": 20, "text": "Yes, definitely. What is the team size?"},
+      {"speaker": "recruiter", "start": 26, "text": "The team has eight people. Can we schedule the technical interview for 14 October at 11 am?"},
+      {"speaker": "candidate", "start": 35, "text": "That works. You can reach me at sam.lee@example.com."},
+      {"speaker": "recruiter", "start": 42, "text": "I'll send the invite today. You will hear about the panel within a week."},
+      {"speaker": "candidate", "start": 50, "text": "Thanks, I appreciated how clear this was."}
+    ]}
+  }
+]
