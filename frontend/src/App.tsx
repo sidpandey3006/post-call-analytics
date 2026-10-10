@@ -39,9 +39,9 @@ export default function App() {
   const [apiKey, setApiKey] = useState('')
   const [provider, setProvider] = useState<'jev' | 'microsoft'>(() => (localStorage.getItem('pca.provider') as 'jev' | 'microsoft') || 'microsoft')
   const [endpoint, setEndpoint] = useState(() => localStorage.getItem('pca.endpoint') ?? '')
-  const [model, setModel] = useState(() => localStorage.getItem('pca.deployment') ?? 'Microsoft-Decision-1')
+  const [model, setModel] = useState(() => { const v = localStorage.getItem('pca.deployment'); return !v || v === 'Microsoft-Decision-1' ? 'Decision-1' : v })
   useEffect(() => { localStorage.setItem('pca.provider', provider); localStorage.setItem('pca.endpoint', endpoint); localStorage.setItem('pca.deployment', model) }, [provider, endpoint, model])
-  const changeProvider = (p: 'jev' | 'microsoft') => { setProvider(p); setModel(p === 'jev' ? 'jev-latest' : 'Microsoft-Decision-1') }
+  const changeProvider = (p: 'jev' | 'microsoft') => { setProvider(p); setModel(p === 'jev' ? 'jev-latest' : 'Decision-1') }
   const [presets, setPresets] = useState<Presets>(loadPresets)
   const [preview, setPreview] = useState<string>('')
   const [error, setError] = useState('')
