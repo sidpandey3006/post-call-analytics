@@ -44,16 +44,29 @@ function ResultCard({ r }: { r: FieldResult }) {
   )
 }
 
-export function Results({ data, elapsedMs }: { data: AnalyzeResponse; elapsedMs?: number | null }) {
+// USD per 1M tokens (input, output). Indicative list prices; check the Azure pricing page for current rates.
+const PRICES = {
+  decision1: [0.042, 0],
+  luna: [0.2, 1.2],
+  terra: [2, 12],
+  sol: [4, 20],
+} as const
+const usd = (n: number) => (n < 0.0001 ? '<$0.0001' : n < 0.01 ? '$' + n.toFixed(5) : '$' + n.toFixed(4))
+const cost = (p: readonly [number, number], i: number, o: number) => (i * p[0] + o * p[1]) / 1e6
+
+export function Results({ data, elapsedMs, provider }: { data: AnalyzeResponse; elapsedMs?: number | null; provider?: string }) {
   const [tab, setTab] = useState<'results' | 'request' | 'response' | 'usage'>('results')
   const inTok = data.usage?.input_tokens
   const outTok = data.usage?.output_tokens
+  const i = inTok ?? 0, o = outTok ?? 0
   const total = inTok != null || outTok != null ? (inTok ?? 0) + (outTok ?? 0) : null
   return (
     <div className="stack">
       <div className="metrics">
         <span>⏱ <strong>{elapsedMs != null ? (elapsedMs / 1000).toFixed(1) + ' s' : '–'}</strong> <span className="muted">time taken</span></span>
         <span>🔢 <strong>{total ?? '–'}</strong> <span className="muted">tokens ({inTok ?? '–'} in / {outTok ?? '–'} out)</span></span>
+          {total != null && provider === 'microsoft' && <span title="$0.042 per 1M input tokens, output free">💲 <strong>{usd(cost(PRICES.decision1, i, o))}</strong> <span className="muted">est. cost (Decision-1)</span></span>}
+          {total != null && <span className="muted" title="Same token counts at GPT-5.6 short-context global list rates per 1M tokens (in/out): Luna $0.20/$1.20, Terra $2/$12, Sol $4/$20. A generative model would usually emit more output tokens, so treat this as indicative.">If GPT-5.6: Luna <strong>{usd(cost(PRICES.luna, i, o))}</strong> · Terra <strong>{usd(cost(PRICES.terra, i, o))}</strong> · Sol <strong>{usd(cost(PRICES.sol, i, o))}</strong> <em>(tentative)</em></span>}
       </div>
       <div className="tabs">
         {(['results', 'request', 'response', 'usage'] as const).map((t) => (

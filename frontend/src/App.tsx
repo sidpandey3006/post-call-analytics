@@ -178,7 +178,7 @@ export default function App() {
             <button className={'primary' + (nudge && canRun ? ' pulse' : '')} disabled={!canRun} onClick={run}>{loading ? 'Running…' : '▶ Run analysis'}</button>
             {!canRun && !loading && <span className="muted">{fields.length === 0 ? 'Add fields first.' : provider === 'microsoft' ? 'Enter endpoint, key and deployment in the header.' : 'Enter your API key in the header.'}</span>}
           </div>
-          {result ? <Results data={result} elapsedMs={elapsedMs} /> : <p className="muted">Run an analysis to see structured results.</p>}
+          {result ? <Results data={result} elapsedMs={elapsedMs} provider={provider} /> : <p className="muted">Run an analysis to see structured results.</p>}
         </section>
       </main>
       <footer>Built by Siddhartha Pandey · Powered by {provider === 'microsoft' ? <a href="https://ai.azure.com/catalog/models/Microsoft-Decision-1" target="_blank" rel="noreferrer">Microsoft Decision-1</a> : <a href="https://docs.typesafe.ai" target="_blank" rel="noreferrer">Jev</a>}</footer>
