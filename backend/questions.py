@@ -1,5 +1,5 @@
 """Translate FieldDefs into Jev question objects."""
-from entities import NONE, find_candidates
+from entities import NONE, PatternError, find_candidates
 from models import FieldDef
 
 MAX_CHOICES = 255
@@ -37,7 +37,10 @@ def build_questions(fields: list[FieldDef], text: str) -> tuple[dict, dict[str, 
         elif f.kind == "entity":
             if not f.entity_type:
                 raise FieldError(f"Entity field '{f.id}' needs entity_type")
-            cands = find_candidates(f.entity_type, text)
+            try:
+                cands = find_candidates(f.entity_type, text, f.pattern)
+            except PatternError as e:
+                raise FieldError(f"Field '{f.id}': {e}")
             candidates[f.id] = cands
             if not cands:
                 continue  # nothing to pick from; reported as not found

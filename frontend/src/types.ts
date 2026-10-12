@@ -1,5 +1,5 @@
 export type Kind = 'noul' | 'choice' | 'score' | 'entity'
-export type EntityType = 'email' | 'phone' | 'amount' | 'date'
+export type EntityType = 'email' | 'phone' | 'amount' | 'date' | 'id' | 'name'
 
 export interface FieldDef {
   id: string
@@ -8,6 +8,7 @@ export interface FieldDef {
   criteria?: Record<string, string | null> | null
   levels?: string[] | null
   entity_type?: EntityType | null
+  pattern?: string | null
   min_confidence: number
   uncertain_band: [number, number]
 }

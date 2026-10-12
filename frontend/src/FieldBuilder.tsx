@@ -2,7 +2,7 @@ import type { EntityType, FieldDef, Kind } from './types'
 import { newField } from './types'
 
 const KINDS: Kind[] = ['noul', 'choice', 'score', 'entity']
-const ENTITIES: EntityType[] = ['email', 'phone', 'amount', 'date']
+const ENTITIES: EntityType[] = ['email', 'phone', 'amount', 'date', 'id', 'name']
 
 function PairsEditor({ value, onChange }: { value: Record<string, string | null>; onChange: (v: Record<string, string | null>) => void }) {
   const rows = Object.entries(value)
@@ -65,6 +65,8 @@ function FieldCard({ f, onChange, onRemove }: { f: FieldDef; onChange: (f: Field
           <select value={f.entity_type ?? 'email'} onChange={(e) => patch({ entity_type: e.target.value as EntityType })}>
             {ENTITIES.map((k) => <option key={k}>{k}</option>)}
           </select>
+          {f.entity_type === 'id' && <input placeholder='ID regex, e.g. [A-Z]{2}\d{6} (optional)' value={f.pattern ?? ''} onChange={(e) => patch({ pattern: e.target.value })} />}
+          {f.entity_type === 'name' && <span className="muted">Finds names after cues like 'my name is' or 'speaking with'</span>}
         </label>
       )}
       <div className="row muted">

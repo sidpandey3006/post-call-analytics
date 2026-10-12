@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, field_validator
 
 FieldKind = Literal["noul", "choice", "score", "entity"]
-EntityType = Literal["email", "phone", "amount", "date"]
+EntityType = Literal["email", "phone", "amount", "date", "id", "name"]
 
 
 class FieldDef(BaseModel):
@@ -15,6 +15,8 @@ class FieldDef(BaseModel):
     # score: ordered level descriptions
     levels: list[str] | None = None
     entity_type: EntityType | None = None
+    # entity_type "id" only: regex that finds candidate IDs (optional; default = mixed letters+digits, 6-20 chars)
+    pattern: str | None = Field(default=None, max_length=200)
     # Noul probabilities within [low, high] are flagged; choice/score/entity flag if confidence < min_confidence
     min_confidence: float = 0.7
     uncertain_band: tuple[float, float] = (0.3, 0.7)

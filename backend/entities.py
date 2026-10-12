@@ -27,11 +27,53 @@ PATTERNS: dict[str, re.Pattern] = {
 }
 
 
-def find_candidates(entity_type: str, text: str) -> list[str]:
+ID_DEFAULT = r"\b(?=[A-Z0-9-]*\d)(?=[A-Z0-9-]*[A-Z])[A-Z0-9][A-Z0-9-]{4,19}\b"
+NAME_CUES = (r"(?i:my name is|my name's|this is|i am|i'm|speaking with|speaking to|call me|name is|name's|"
+             r"asking for|ask for|hello|hi|dear)")
+NAME_RE = re.compile(NAME_CUES + r"\s+(?:(?:Mr|Mrs|Ms|Miss|Dr|Mx)\.?\s+)?([A-Z][a-z]+(?:[ '-][A-Z][a-z]+){0,2})")
+NAME_STOP = {"Sorry", "Calling", "Happy", "Glad", "Not", "Sure", "Fine", "Good", "Great", "Looking", "Here", "Afraid",
+             "Thank", "Thanks", "Okay", "Yes", "No", "Please", "Just", "Still", "Having", "Trying", "Interested"}
+MAX_CANDIDATES = 50
+_NESTED_QUANT = re.compile(r"\([^)]*[+*][^)]*\)[+*{]")
+
+
+class PatternError(ValueError):
+    pass
+
+
+def compile_id_pattern(pattern: str | None) -> re.Pattern:
+    p = (pattern or "").strip() or ID_DEFAULT
+    if len(p) > 200 or _NESTED_QUANT.search(p):
+        raise PatternError("ID pattern is too long or has nested repetition; simplify it")
+    try:
+        return re.compile(p)
+    except re.error as e:
+        raise PatternError(f"Invalid ID pattern: {e}")
+
+
+def _find_names(text: str) -> list[str]:
+    out = []
+    for m in NAME_RE.finditer(text):
+        words = [w for w in re.split(r"[ ]", m.group(1)) if w and w not in NAME_STOP]
+        if words:
+            out.append(" ".join(words))
+    return out
+
+
+def find_candidates(entity_type: str, text: str, pattern: str | None = None) -> list[str]:
     seen: set[str] = set()
     out: list[str] = []
-    for m in PATTERNS[entity_type].findall(text):
+    if entity_type == "name":
+        matches = _find_names(text)
+    elif entity_type == "id":
+        rx = compile_id_pattern(pattern)
+        matches = [m.group(0) for m in rx.finditer(text)]
+    else:
+        matches = PATTERNS[entity_type].findall(text)
+    for m in matches:
         span = m.strip()
+        if len(out) >= MAX_CANDIDATES:
+            break
         if entity_type == "phone" and sum(c.isdigit() for c in span) < 7:
             continue
         if span and span not in seen:
@@ -44,6 +86,8 @@ def normalize_entity(entity_type: str, value: str, reference: datetime | None = 
     """Return a normalized value, or None if it cannot be normalized."""
     if value is None or value == NONE:
         return None
+    if entity_type in ("id", "name"):
+        return value.strip()
     if entity_type == "email":
         return value.lower()
     if entity_type == "phone":

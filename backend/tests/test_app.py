@@ -257,3 +257,15 @@ def test_library_templates_have_samples():
         assert t.get('sample'), t['name']
         assert normalize_transcript(t['sample'])[1] == []
 
+
+
+def test_id_and_name_entities():
+    t = 'Hi, my name is Priya Shah. ID is AB123456 and claim CL-998877. I am sorry about that.'
+    assert find_candidates('name', t) == ['Priya Shah']
+    assert 'AB123456' in find_candidates('id', t)
+    assert find_candidates('id', t, r'CL-\d+') == ['CL-998877']
+    assert normalize_entity('id', ' AB123456 ') == 'AB123456'
+    f = FieldDef(id='x', kind='entity', instructions='q', entity_type='id', pattern='(a+)+')
+    with pytest.raises(FieldError):
+        build_questions([f], t)
+
