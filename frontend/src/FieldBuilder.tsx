@@ -2,7 +2,7 @@ import type { EntityType, FieldDef, Kind } from './types'
 import { newField } from './types'
 
 const KINDS: Kind[] = ['noul', 'choice', 'score', 'entity']
-const ENTITIES: EntityType[] = ['email', 'phone', 'amount', 'date', 'id', 'name']
+const ENTITIES: EntityType[] = ['email', 'phone', 'amount', 'date', 'id', 'name', 'text']
 
 function PairsEditor({ value, onChange }: { value: Record<string, string | null>; onChange: (v: Record<string, string | null>) => void }) {
   const rows = Object.entries(value)
@@ -40,7 +40,7 @@ function FieldCard({ f, onChange, onRemove }: { f: FieldDef; onChange: (f: Field
   const patch = (p: Partial<FieldDef>) => onChange({ ...f, ...p })
   const changeKind = (kind: Kind) => {
     const base = newField(kind)
-    onChange({ ...base, id: f.id, instructions: f.instructions })
+    onChange({ ...base, id: f.id, instructions: f.instructions, output_path: f.output_path, output_type: f.output_type })
   }
   return (
     <div className="card">
@@ -66,9 +66,11 @@ function FieldCard({ f, onChange, onRemove }: { f: FieldDef; onChange: (f: Field
             {ENTITIES.map((k) => <option key={k}>{k}</option>)}
           </select>
           {f.entity_type === 'id' && <input placeholder='ID regex, e.g. [A-Z]{2}\d{6} (optional)' value={f.pattern ?? ''} onChange={(e) => patch({ pattern: e.target.value })} />}
+          {f.entity_type === 'text' && <input placeholder='Optional regex; first capture group is the value. Otherwise uses transcript phrases.' value={f.pattern ?? ''} onChange={(e) => patch({ pattern: e.target.value })} />}
           {f.entity_type === 'name' && <span className="muted">Finds names after cues like 'my name is' or 'speaking with'</span>}
         </label>
       )}
+      {f.output_path && <div className="muted">JSON output: <code>{f.output_path.join(' / ')}</code> ({f.output_type ?? 'string'})</div>}
       <div className="row muted">
         {f.kind === 'noul' ? (
           <>

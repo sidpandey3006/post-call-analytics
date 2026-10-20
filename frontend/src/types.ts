@@ -1,5 +1,5 @@
 export type Kind = 'noul' | 'choice' | 'score' | 'entity'
-export type EntityType = 'email' | 'phone' | 'amount' | 'date' | 'id' | 'name'
+export type EntityType = 'email' | 'phone' | 'amount' | 'date' | 'id' | 'name' | 'text'
 
 export interface FieldDef {
   id: string
@@ -9,6 +9,8 @@ export interface FieldDef {
   levels?: string[] | null
   entity_type?: EntityType | null
   pattern?: string | null
+  output_path?: string[] | null
+  output_type?: 'string' | 'number'
   min_confidence: number
   uncertain_band: [number, number]
 }
@@ -28,6 +30,7 @@ export interface FieldResult {
 }
 
 export interface AnalyzeResponse {
+  structured_output?: Record<string, unknown> | null
   results: FieldResult[]
   flags: string[]
   state: unknown

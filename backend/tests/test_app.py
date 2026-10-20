@@ -231,7 +231,7 @@ def test_scenarios_valid_and_samples_support_entities():
     from normalize import normalize_transcript, transcript_text
     from questions import build_questions
     d = client.get("/api/scenarios").json()
-    assert len(d) == 8
+    assert len(d) == 9
     for s in d:
         fields = [FieldDef(**f) for f in s["fields"]]
         assert len({f.id for f in fields}) == len(fields), s["name"]
@@ -240,7 +240,9 @@ def test_scenarios_valid_and_samples_support_entities():
         build_questions(fields, text)
         for f in fields:
             if f.kind == "entity":
-                assert find_candidates(f.entity_type, text), f"{s['name']}:{f.id} has no candidate in sample"
+                candidates = find_candidates(f.entity_type, text, f.pattern)
+                if s["name"] != "loan_entity_extraction":
+                    assert candidates, f"{s['name']}:{f.id} has no candidate in sample"
 
 
 def test_parse_sample():
@@ -269,3 +271,118 @@ def test_id_and_name_entities():
     with pytest.raises(FieldError):
         build_questions([f], t)
 
+
+def _extraction_scenario():
+    return next(s for s in client.get("/api/scenarios").json() if s["name"] == "loan_entity_extraction")
+
+
+def test_text_candidates_are_verbatim_and_support_bare_responses():
+    text = "My name is Arjun Verma.\nBusiness.\nI work for Example Services.\nLucknow, Uttar Pradesh."
+    candidates = find_candidates("text", text)
+    assert {"Arjun Verma", "Business", "Example Services", "Lucknow, Uttar Pradesh"} <= set(candidates)
+    assert all(c in text for c in candidates)
+    assert find_candidates("text", "The EMI is Rs 2,657.", r"Rs ([\d,]+)") == ["2,657"]
+    assert normalize_entity("text", " Business ") == "Business"
+    with pytest.raises(FieldError):
+        build_questions([FieldDef(id="x", kind="entity", entity_type="text", instructions="q", pattern="(")], text)
+
+
+@respx.mock
+def test_loan_extraction_end_to_end():
+    scenario = _extraction_scenario()
+    fields = [FieldDef(**f) for f in scenario["fields"]]
+    state, _ = normalize_transcript(scenario["sample"])
+    from normalize import transcript_text
+    _, candidates = build_questions(fields, transcript_text(state))
+    selected = {
+        "greetings_end": "Yes", "bajaj_introduction": "Yes",
+        "customer_name": "Arjun Verma", "customer_dob": "01/01/1992",
+        "pan_card_digits": "64 1 G", "profession": "Business",
+        "current_pincode": "271502", "current_city": "Colonymarket, Uttar Pradesh",
+        "loan_amount": "Rs 50,000", "loan_rate": "31% reducing",
+        "loan_tenure": "35 months", "loan_emi": "2657",
+        "loan_installments": "35", "loan_processing_fee": "2127",
+    }
+    for fid, value in selected.items():
+        if fid in candidates:
+            assert value in candidates[fid], (fid, candidates[fid])
+    answers = {f.id: {"choice": selected.get(f.id, "none"), "confidence": 0.99}
+               for f in fields if f.kind == "choice" or candidates.get(f.id)}
+    route = respx.post("https://res.services.ai.azure.com/providers/microsoft/v1/systemone").mock(
+        return_value=httpx.Response(200, json={"answers": answers}))
+    response = client.post("/api/analyze", json={
+        "api_key": "sk-secret", "provider": "microsoft",
+        "endpoint": "https://res.services.ai.azure.com", "model": "Decision-1",
+        "fields": scenario["fields"], "transcript": scenario["sample"],
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["structured_output"] == {
+        "Greetings_end": "Yes", "Bajaj_Introduction": "Yes",
+        "Customer_Details": {
+            "Name": "Arjun Verma", "DOB": "01/01/1992", "PAN_card_digits": "64 1 G",
+            "Profession": "Business", "Company": "", "Years of Experience": "", "Salary": "",
+        },
+        "Current_Address": {"Pincode": "271502", "City": "Colonymarket, Uttar Pradesh"},
+        "Permanent_Address": {"Pincode": "", "City": ""},
+        "Loan": {"Amount": 50000, "Rate": "31% reducing", "Tenure": "35 months",
+                 "EMI": 2657, "number of installments": 35, "processing fee": 2127},
+    }
+    assert len(data["results"]) == len(fields)
+    assert data["flags"] == []
+    assert "output_path" not in route.calls[0].request.content.decode()
+    assert "sk-secret" not in response.text
+
+
+def test_extraction_alternative_wording():
+    from normalize import transcript_text
+    fields = [FieldDef(**f) for f in _extraction_scenario()["fields"]]
+    state, _ = normalize_transcript({"turns": [
+        {"speaker": "agent", "text": "Your full name?"},
+        {"speaker": "customer", "text": "Meera Sharma."},
+        {"speaker": "agent", "text": "Occupation and employer?"},
+        {"speaker": "customer", "text": "Software engineer. I work at Example Technologies. I have been working for 8 years."},
+        {"speaker": "agent", "text": "Current city and PIN?"},
+        {"speaker": "customer", "text": "Pune, Maharashtra. 411001."},
+        {"speaker": "agent", "text": "The fee is 1,234 rupees and you pay 2400 every month in 24 installments."},
+    ]})
+    _, c = build_questions(fields, transcript_text(state))
+    assert "Meera Sharma" in c["customer_name"]
+    assert "Software engineer" in c["profession"]
+    assert "Example Technologies" in c["company"]
+    assert "8 years" in c["years_experience"]
+    assert "Pune, Maharashtra" in c["current_city"]
+    assert "411001" in c["current_pincode"]
+    assert "1,234" in c["loan_processing_fee"]
+    assert "2400" in c["loan_emi"]
+    assert "24" in c["loan_installments"]
+
+
+def test_output_paths_and_unsupported_entities():
+    from postprocess import build_structured_output
+    f = FieldDef(id="name", kind="entity", entity_type="text", instructions="q", output_path=["Customer", "Name"])
+    results, flags = build_results([f], {"name": {"choice": "invented", "confidence": 1}}, {"name": ["Arjun"]})
+    assert flags and results[0].value is None
+    assert build_structured_output([f], results) == {"Customer": {"Name": ""}}
+    results, flags = build_results([f], {}, {"name": ["Arjun"]})
+    assert flags and results[0].review_reason == "No answer returned"
+    assert build_structured_output([], []) is None
+    duplicate = f.model_copy(update={"id": "other"})
+    with pytest.raises(FieldError, match="conflicting output path"):
+        build_questions([f, duplicate], "")
+    parent = f.model_copy(update={"id": "other", "output_path": ["Customer"]})
+    with pytest.raises(FieldError, match="conflicting output path"):
+        build_questions([f, parent], "")
+
+
+def test_numeric_output_and_missing_values():
+    from postprocess import build_structured_output
+    f = FieldDef(id="fee", kind="entity", entity_type="text", instructions="q",
+                 output_path=["Loan", "processing fee"], output_type="number")
+    results, _ = build_results([f], {"fee": {"choice": "2,127.50", "confidence": 0.99}}, {"fee": ["2,127.50"]})
+    assert build_structured_output([f], results) == {"Loan": {"processing fee": 2127.5}}
+    results, _ = build_results([f], {}, {"fee": []})
+    assert build_structured_output([f], results) == {"Loan": {"processing fee": ""}}
+    results, _ = build_results([f], {"fee": {"choice": "not numeric", "confidence": 0.99}}, {"fee": ["not numeric"]})
+    with pytest.raises(ValueError, match="cannot be exported as a number"):
+        build_structured_output([f], results)

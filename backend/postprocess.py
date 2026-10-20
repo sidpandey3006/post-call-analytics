@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
 from entities import NONE, normalize_entity
 from models import FieldDef, FieldResult
@@ -29,8 +30,8 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
         if f.kind == "entity":
             r.entity_candidates = candidates.get(f.id, [])
             if a is None:
-                r.needs_review = False
-                r.review_reason = "No candidates found in transcript"
+                r.needs_review = bool(r.entity_candidates)
+                r.review_reason = "No answer returned" if r.entity_candidates else "No candidates found in transcript"
             else:
                 r.value = a.get("choice")
                 r.confidence = _confidence(a)
@@ -38,6 +39,9 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
                 if r.value == NONE:
                     r.value = None
                     r.review_reason = "Model found no matching candidate"
+                elif r.value not in r.entity_candidates:
+                    r.value = None
+                    r.needs_review, r.review_reason = True, "Model returned a value outside transcript candidates"
                 else:
                     r.normalized = normalize_entity(f.entity_type, r.value, reference)
                     if r.normalized is None:
@@ -62,3 +66,27 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
             flags.append(f"{f.id}: {r.review_reason}")
         results.append(r)
     return results, flags
+
+
+def build_structured_output(fields: list[FieldDef], results: list[FieldResult]) -> dict | None:
+    output: dict = {}
+    by_id = {r.id: r for r in results}
+    for f in fields:
+        if not f.output_path:
+            continue
+        r = by_id[f.id]
+        value = r.value if r.value is not None else ""
+        if f.output_type == "number" and value != "":
+            source = r.normalized.get("amount") if isinstance(r.normalized, dict) else value
+            try:
+                number = Decimal(str(source).replace(",", ""))
+                if not number.is_finite():
+                    raise InvalidOperation
+                value = int(number) if number == number.to_integral_value() else float(number)
+            except (InvalidOperation, ValueError, OverflowError):
+                raise ValueError(f"Field '{f.id}' cannot be exported as a number")
+        target = output
+        for key in f.output_path[:-1]:
+            target = target.setdefault(key, {})
+        target[f.output_path[-1]] = value
+    return output or None

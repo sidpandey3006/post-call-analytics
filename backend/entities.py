@@ -60,14 +60,36 @@ def _find_names(text: str) -> list[str]:
     return out
 
 
+def _find_text(text: str) -> list[str]:
+    out: list[str] = []
+    for clause in re.split(r"[;!?\n]|\.(?=\s|$)", text):
+        clause = clause.strip(" \t,")
+        if not clause:
+            continue
+        # Keep both complete responses and verbatim values after common spoken cues.
+        cue = re.search(
+            r"(?i)\b(?:my name is|my name's|i am|i'm|i live in|i work (?:at|for)|"
+            r"(?:name|profession|occupation|company|current (?:address|city)|permanent (?:address|city))"
+            r"\s*(?:is|:))\s+(.+)", clause)
+        if cue:
+            value = cue.group(1).strip()
+            out.append(re.split(r"(?i),?\s+(?:pincode|pin code|PIN)\b", value)[0].rstrip(", "))
+        if len(clause) <= 120:
+            out.append(clause)
+    return out
+
+
 def find_candidates(entity_type: str, text: str, pattern: str | None = None) -> list[str]:
     seen: set[str] = set()
     out: list[str] = []
     if entity_type == "name":
         matches = _find_names(text)
-    elif entity_type == "id":
+    elif entity_type == "text" and not (pattern or "").strip():
+        matches = _find_text(text)
+    elif entity_type in ("id", "text"):
         rx = compile_id_pattern(pattern)
-        matches = [m.group(0) for m in rx.finditer(text)]
+        matches = [(m.group(1) if entity_type == "text" and rx.groups else m.group(0)) or ""
+                   for m in rx.finditer(text)]
     else:
         matches = PATTERNS[entity_type].findall(text)
     for m in matches:
@@ -86,7 +108,7 @@ def normalize_entity(entity_type: str, value: str, reference: datetime | None = 
     """Return a normalized value, or None if it cannot be normalized."""
     if value is None or value == NONE:
         return None
-    if entity_type in ("id", "name"):
+    if entity_type in ("id", "name", "text"):
         return value.strip()
     if entity_type == "email":
         return value.lower()

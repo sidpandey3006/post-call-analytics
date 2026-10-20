@@ -17,7 +17,7 @@ Paste your TypeSafe API key in the header (kept in memory, sent per request, nev
 - **noul** – yes/no probability; flagged if inside the uncertain band.
 - **choice** – one option from a set; flagged if confidence is below threshold.
 - **score** – ordered rubric levels; flagged if confidence is below threshold.
-- **entity** (email, phone, amount, date) – a regex finds candidates in the transcript, Jev picks one with a Choice question (plus `none`), and code normalizes the verbatim value. Jev never generates text, so values cannot be invented.
+- **entity** (email, phone, amount, date, id, name, text) – candidate discovery finds literal values in the transcript, the model picks one with a Choice question (plus `none`), and code normalizes the verbatim value. Text entities use transcript phrases by default, or an optional regex whose first capture group is the value. The model never generates entity text.
 
 ## Transcript formats
 `{turns|segments|messages:[{speaker,text,start}]}`, AssemblyAI `utterances`, Deepgram `results.utterances`/`channels`, Azure `recognizedPhrases`, or plain `{text}`. Same-speaker segments are merged and turns are numbered. Label speakers `agent`/`customer` for best results.
@@ -45,4 +45,10 @@ Click **Generate from use case** in the Fields panel and describe your scenario.
 
 ### Example scenarios
 
-The gallery above the workspace offers 8 ready-made voice scenarios (retail banking, insurance claims, patient access, health-plan member services, airline and travel, travel concierge, AI tutor, recruiting). Click one to load its fields and a sample call, then edit. Definitions live in `backend/templates/scenarios.json`; each field is explicit-evidence based and satisfaction is captured as a choice of what the customer explicitly said. Scenarios in sensitive domains are operational analytics only.
+The gallery above the workspace offers ready-made voice scenarios (retail banking, insurance claims, patient access, health-plan member services, airline and travel, travel concierge, AI tutor, recruiting, and loan entity extraction). Click one to load its fields and a sample call, then edit. Definitions live in `backend/templates/scenarios.json` and `backend/templates/loan_extraction.json`; each field is explicit-evidence based and satisfaction is captured as a choice of what the customer explicitly said. Scenarios in sensitive domains are operational analytics only.
+
+### Loan entity extraction
+
+Select **Loan call entity extraction**, replace the sample transcript with your transcript JSON, and click **Run analysis**. Results include the existing field cards and downloadable nested JSON with greeting checks, customer details, current/permanent addresses and loan terms. No chat deployment is required. The sample uses fictional data.
+
+Fields carry an `output_path` (one or two JSON keys) and optional `output_type: "number"` so the schema survives saved presets and field imports. Missing values become empty strings; loan amount, EMI, installment count and processing fee are JSON numbers when found. DOB and other string fields retain the selected transcript wording. The model selects among at most 50 literal candidates per field; unfamiliar wording, spoken-out numbers and long transcripts can leave values missing. Inspect candidates and review flags before using the output. This is extraction of stated facts, not financial advice or a credit decision.

@@ -1,0 +1,132 @@
+{
+  "name": "loan_entity_extraction",
+  "title": "Loan call entity extraction",
+  "publisher": "Custom",
+  "tags": ["Voice", "Entity extraction"],
+  "description": "Extract customer details, addresses and stated loan terms into nested JSON, with greeting and Bajaj introduction checks.",
+  "notice": "Extract explicitly stated facts only, not creditworthiness or eligibility. Use only transcripts you are authorized to process; names, DOB, PAN and addresses are personal data. Regex candidates may miss unfamiliar wording. The sample is fictional.",
+  "fields": [
+    {
+      "id": "greetings_end", "kind": "choice",
+      "instructions": "Did the agent end the call with a greeting or polite farewell?",
+      "criteria": {"Yes": "An explicit closing greeting or farewell", "No": "No closing greeting or farewell"},
+      "output_path": ["Greetings_end"]
+    },
+    {
+      "id": "bajaj_introduction", "kind": "choice",
+      "instructions": "Did the agent explicitly introduce themselves as calling from Bajaj Finance?",
+      "criteria": {"Yes": "Explicit Bajaj Finance introduction", "No": "No explicit Bajaj Finance introduction"},
+      "output_path": ["Bajaj_Introduction"]
+    },
+    {
+      "id": "customer_name", "kind": "entity", "entity_type": "text",
+      "instructions": "Select the customer's full name, not the agent's name. Select none if it was not stated.",
+      "output_path": ["Customer_Details", "Name"]
+    },
+    {
+      "id": "customer_dob", "kind": "entity", "entity_type": "date",
+      "instructions": "Select the customer's explicitly stated date of birth, not another date. Preserve the spoken date format.",
+      "output_path": ["Customer_Details", "DOB"]
+    },
+    {
+      "id": "pan_card_digits", "kind": "entity", "entity_type": "text",
+      "pattern": "\\b([A-Z]{5}\\d{4}[A-Z]|\\d[A-Z0-9 ]{0,18}[A-Z0-9])\\b",
+      "instructions": "Select the PAN card digits or characters explicitly stated for the customer. Do not invent missing digits.",
+      "output_path": ["Customer_Details", "PAN_card_digits"]
+    },
+    {
+      "id": "profession", "kind": "entity", "entity_type": "text",
+      "instructions": "Select the customer's explicitly stated profession or occupation.",
+      "output_path": ["Customer_Details", "Profession"]
+    },
+    {
+      "id": "company", "kind": "entity", "entity_type": "text",
+      "instructions": "Select the customer's employer or company name only if explicitly stated. Do not select the lender.",
+      "output_path": ["Customer_Details", "Company"]
+    },
+    {
+      "id": "years_experience", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s+years?)\\b",
+      "instructions": "Select the customer's explicitly stated years of work experience, not age or loan tenure.",
+      "output_path": ["Customer_Details", "Years of Experience"]
+    },
+    {
+      "id": "salary", "kind": "entity", "entity_type": "amount",
+      "instructions": "Select the customer's explicitly stated salary. Do not substitute business revenue or loan amounts. Select none if salary was not stated.",
+      "output_path": ["Customer_Details", "Salary"]
+    },
+    {
+      "id": "current_pincode", "kind": "entity", "entity_type": "text",
+      "pattern": "\\b([1-9]\\d{5})\\b",
+      "instructions": "Select the pincode explicitly stated for the customer's current address, not their permanent address.",
+      "output_path": ["Current_Address", "Pincode"]
+    },
+    {
+      "id": "current_city", "kind": "entity", "entity_type": "text",
+      "instructions": "Select the city and state explicitly stated for the current address. Exclude the pincode. Do not infer a city from the pincode.",
+      "output_path": ["Current_Address", "City"]
+    },
+    {
+      "id": "permanent_pincode", "kind": "entity", "entity_type": "text",
+      "pattern": "\\b([1-9]\\d{5})\\b",
+      "instructions": "Select the pincode explicitly stated for the permanent address. Select none if no permanent address was stated; do not copy the current address.",
+      "output_path": ["Permanent_Address", "Pincode"]
+    },
+    {
+      "id": "permanent_city", "kind": "entity", "entity_type": "text",
+      "instructions": "Select the city and state explicitly stated for the permanent address. Select none if not stated. Do not copy the current address.",
+      "output_path": ["Permanent_Address", "City"]
+    },
+    {
+      "id": "loan_amount", "kind": "entity", "entity_type": "amount",
+      "instructions": "Select the final loan principal amount explicitly stated by the agent, not salary, EMI, fees or a maximum promotional offer.",
+      "output_path": ["Loan", "Amount"], "output_type": "number"
+    },
+    {
+      "id": "loan_rate", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s*%(?:\\s+(?:reducing|flat)(?:\\s+balance)?)?)",
+      "instructions": "Select the explicitly stated interest rate and reducing or flat basis, not a fee percentage.",
+      "output_path": ["Loan", "Rate"]
+    },
+    {
+      "id": "loan_tenure", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+\\s+(?:months?|years?))\\b",
+      "instructions": "Select the final loan repayment tenure, not the customer's work experience.",
+      "output_path": ["Loan", "Tenure"]
+    },
+    {
+      "id": "loan_emi", "kind": "entity", "entity_type": "text",
+      "pattern": "\\b(\\d[\\d,]*(?:\\.\\d+)?)\\b",
+      "instructions": "Select the explicitly stated monthly loan EMI amount.",
+      "output_path": ["Loan", "EMI"], "output_type": "number"
+    },
+    {
+      "id": "loan_installments", "kind": "entity", "entity_type": "text",
+      "pattern": "\\b(\\d+)\\b",
+      "instructions": "Select the explicitly stated number of installments. Do not calculate it from the tenure.",
+      "output_path": ["Loan", "number of installments"], "output_type": "number"
+    },
+    {
+      "id": "loan_processing_fee", "kind": "entity", "entity_type": "text",
+      "pattern": "\\b(\\d[\\d,]*(?:\\.\\d+)?)\\b",
+      "instructions": "Select the explicitly stated processing fee amount, not a percentage. Do not calculate it.",
+      "output_path": ["Loan", "processing fee"], "output_type": "number"
+    }
+  ],
+  "sample": {
+    "call_id": "fictional-loan-extraction-demo",
+    "turns": [
+      {"speaker": "agent", "text": "Hello, I am Kavya calling from Bajaj Finance. May I confirm your name and date of birth?"},
+      {"speaker": "customer", "text": "My name is Arjun Verma. My date of birth is 01/01/1992."},
+      {"speaker": "agent", "text": "Please confirm the PAN card characters requested for this fictional demo and your profession."},
+      {"speaker": "customer", "text": "My PAN card digits are 64 1 G. My profession is Business."},
+      {"speaker": "agent", "text": "What is your current address city and pincode?"},
+      {"speaker": "customer", "text": "My current address is Colonymarket, Uttar Pradesh, pincode 271502."},
+      {"speaker": "agent", "text": "You have not provided a company, work experience, salary or permanent address. I will leave those blank. The final loan amount is Rs 50,000. The interest rate is 31% reducing. The loan tenure is 35 months."},
+      {"speaker": "customer", "text": "Please confirm the EMI, number of installments and processing fee."},
+      {"speaker": "agent", "text": "The EMI is Rs 2657. There are 35 installments. The processing fee is Rs 2127. These are the quoted terms, not a calculation."},
+      {"speaker": "customer", "text": "Thank you for explaining the quoted terms."},
+      {"speaker": "agent", "text": "Thank you for your time. Have a good day. Goodbye."}
+    ]
+  }
+}

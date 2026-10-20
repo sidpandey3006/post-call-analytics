@@ -54,6 +54,15 @@ const PRICES = {
 const usd = (n: number) => (n < 0.0001 ? '<$0.0001' : n < 0.01 ? '$' + n.toFixed(5) : '$' + n.toFixed(4))
 const cost = (p: readonly [number, number], i: number, o: number) => (i * p[0] + o * p[1]) / 1e6
 
+function downloadJson(value: unknown, filename: string) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function Results({ data, elapsedMs, provider }: { data: AnalyzeResponse; elapsedMs?: number | null; provider?: string }) {
   const [tab, setTab] = useState<'results' | 'request' | 'response' | 'usage'>('results')
   const inTok = data.usage?.input_tokens
@@ -79,6 +88,12 @@ export function Results({ data, elapsedMs, provider }: { data: AnalyzeResponse; 
           <div className={data.flags.length ? 'flag' : 'ok'}>
             {data.flags.length ? `${data.flags.length} field(s) need review` : 'No review flags'}
           </div>
+          {data.structured_output && <div className="card">
+            <strong>Extracted JSON</strong>
+            <p className="muted">Missing values are empty strings. Candidate matching can miss unfamiliar wording; review the field results before using this output.</p>
+            <pre>{JSON.stringify(data.structured_output, null, 2)}</pre>
+            <button className="small" onClick={() => downloadJson(data.structured_output, 'extracted-entities.json')}>Download extracted JSON</button>
+          </div>}
           {data.results.map((r) => <ResultCard key={r.id} r={r} />)}
         </>
       )}
@@ -89,13 +104,7 @@ export function Results({ data, elapsedMs, provider }: { data: AnalyzeResponse; 
           <div>Input tokens: <strong>{data.usage?.input_tokens ?? '–'}</strong></div>
           <div>Output tokens: <strong>{data.usage?.output_tokens ?? '–'}</strong></div>
           <div>Time taken: <strong>{elapsedMs != null ? (elapsedMs / 1000).toFixed(2) + ' s' : '–'}</strong></div>
-          <button className="small" onClick={() => {
-            const blob = new Blob([JSON.stringify(data.results, null, 2)], { type: 'application/json' })
-            const a = document.createElement('a')
-            a.href = URL.createObjectURL(blob)
-            a.download = 'analytics.json'
-            a.click()
-          }}>Download results JSON</button>
+          <button className="small" onClick={() => downloadJson(data.results, 'analytics.json')}>Download results JSON</button>
         </div>
       )}
     </div>

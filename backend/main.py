@@ -12,7 +12,7 @@ from generator import build_chat_body, build_sample_body, parse_generated, parse
 from providers import DecisionError, call_azure_chat, call_jev, call_microsoft
 from models import AnalyzeRequest, AnalyzeResponse
 from normalize import normalize_transcript, transcript_text
-from postprocess import build_results
+from postprocess import build_results, build_structured_output
 from questions import FieldError, build_questions
 
 app = FastAPI(title="Post-call analytics")
@@ -42,7 +42,9 @@ TEMPLATE_FILES = {"loan": "loan.json", "sales": "sales.json"}
 
 @app.get("/api/scenarios")
 def list_scenarios():
-    return json.loads((TEMPLATES / "scenarios.json").read_text(encoding="utf-8"))
+    scenarios = json.loads((TEMPLATES / "scenarios.json").read_text(encoding="utf-8"))
+    scenarios.append(json.loads((TEMPLATES / "loan_extraction.json").read_text(encoding="utf-8")))
+    return scenarios
 
 
 @app.get("/api/templates/{name}")
@@ -136,5 +138,10 @@ async def analyze(req: AnalyzeRequest):
     except DecisionError as e:
         raise HTTPException(e.status if 400 <= e.status < 600 else 502, e.message)
     results, flags = build_results(req.fields, raw.get("answers", {}), candidates)
+    try:
+        structured_output = build_structured_output(req.fields, results)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
     return AnalyzeResponse(results=results, flags=flags, state=state, warnings=warnings,
-                           raw_request=body, raw_response=raw, usage=raw.get("usage"))
+                           raw_request=body, raw_response=raw, usage=raw.get("usage"),
+                           structured_output=structured_output)
