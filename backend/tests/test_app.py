@@ -42,6 +42,35 @@ def test_normalize_deepgram_utterances():
     assert state["turns"][0]["text"] == "hi"
 
 
+def test_normalize_azure_fast_transcription():
+    transcript = {
+        "durationMilliseconds": 10000,
+        "combinedPhrases": [{"text": "Do not duplicate this combined text."}],
+        "phrases": [
+            {"speaker": 1, "offsetMilliseconds": 0, "durationMilliseconds": 1200, "text": "Hello.", "locale": "hi-IN"},
+            {"speaker": 1, "offsetMilliseconds": 1500, "durationMilliseconds": 500, "text": "Welcome.", "locale": "hi-IN"},
+            {"speaker": 2, "offsetMilliseconds": 2200, "durationMilliseconds": 1800, "text": "Thank you.", "locale": "hi-IN"},
+        ],
+    }
+    state, warnings = normalize_transcript(transcript)
+    assert state["duration"] == 10
+    assert state["language"] == "hi-IN"
+    assert state["turns"] == [
+        {"i": 1, "speaker": "spk1", "start": 0, "end": 2, "text": "Hello. Welcome."},
+        {"i": 2, "speaker": "spk2", "start": 2.2, "end": 4, "text": "Thank you."},
+    ]
+    assert len(warnings) == 1 and "roles" in warnings[0]
+    assert "combined" not in str(state)
+
+
+def test_normalize_azure_combined_only():
+    state, warnings = normalize_transcript({"phrases": [], "combinedPhrases": [{"text": "Hello there."}]})
+    assert state["turns"] == [{"i": 1, "speaker": "unknown", "text": "Hello there."}]
+    assert warnings
+    with pytest.raises(ValueError, match="no text"):
+        normalize_transcript({"phrases": [], "combinedPhrases": []})
+
+
 def test_normalize_errors():
     with pytest.raises(ValueError):
         normalize_transcript({"foo": 1})
@@ -386,3 +415,60 @@ def test_numeric_output_and_missing_values():
     results, _ = build_results([f], {"fee": {"choice": "not numeric", "confidence": 0.99}}, {"fee": ["not numeric"]})
     with pytest.raises(ValueError, match="cannot be exported as a number"):
         build_structured_output([f], results)
+
+
+@respx.mock
+def test_azure_hindi_extraction():
+    from normalize import transcript_text
+    scenario = _extraction_scenario()
+    transcript = {"durationMilliseconds": 12000, "phrases": [
+        {"speaker": 1, "offsetMilliseconds": 0, "durationMilliseconds": 2000, "locale": "hi-IN",
+         "text": "नमस्ते। बजाज फाइनेंस से बोल रही हूँ। अनिल वर्मा जी, आपका लोन ₹80,000 का है।"},
+        {"speaker": 2, "offsetMilliseconds": 2500, "durationMilliseconds": 1500, "locale": "hi-IN",
+         "text": "हाँ जी, बोलिए।"},
+        {"speaker": 1, "offsetMilliseconds": 4500, "durationMilliseconds": 6000, "locale": "hi-IN",
+         "text": "ईएमआई ₹3,200 है। लोन 30 महीने का है। ब्याज 18% रिड्यूसिंग है। धन्यवाद।"},
+    ]}
+    fields = [FieldDef(**f) for f in scenario["fields"]]
+    state, warnings = normalize_transcript(transcript)
+    questions, candidates = build_questions(fields, transcript_text(state))
+    selected = {
+        "greetings_end": "Yes", "bajaj_introduction": "Yes", "customer_name": "अनिल वर्मा",
+        "loan_amount": "₹80,000", "loan_rate": "18% रिड्यूसिंग",
+        "loan_tenure": "30 महीने", "loan_emi": "3,200",
+    }
+    for fid, value in selected.items():
+        if fid in candidates:
+            assert value in candidates[fid], (fid, candidates[fid])
+    assert "धन्यवाद" in candidates["customer_name"]
+    answers = {fid: {"choice": selected.get(fid, "none"), "confidence": 0.98} for fid in questions}
+    route = respx.post("https://res.services.ai.azure.com/providers/microsoft/v1/systemone").mock(
+        return_value=httpx.Response(200, json={"answers": answers}))
+    response = client.post("/api/analyze", json={
+        "api_key": "sk-secret", "provider": "microsoft",
+        "endpoint": "https://res.services.ai.azure.com", "model": "Decision-1",
+        "fields": scenario["fields"], "transcript": transcript,
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["warnings"] == warnings
+    assert data["structured_output"]["Customer_Details"]["Name"] == "अनिल वर्मा"
+    assert data["structured_output"]["Customer_Details"]["DOB"] == ""
+    assert data["structured_output"]["Loan"] == {
+        "Amount": 80000, "Rate": "18% रिड्यूसिंग", "Tenure": "30 महीने",
+        "EMI": 3200, "number of installments": "", "processing fee": "",
+    }
+    assert json.loads(route.calls[0].request.content)["state"]["turns"][0]["start"] == 0
+
+
+@respx.mock
+def test_analyze_warns_when_candidate_limit_is_reached():
+    respx.post("https://api.typesafe.ai/v1/systemone").mock(
+        return_value=httpx.Response(200, json={"answers": {"value": {"choice": "none", "confidence": 0.99}}}))
+    response = client.post("/api/analyze", json={
+        "api_key": "sk-secret",
+        "transcript": {"turns": [{"speaker": "customer", "text": "\n".join(f"Response {i}." for i in range(60))}]},
+        "fields": [{"id": "value", "kind": "entity", "entity_type": "text", "instructions": "Select a value."}],
+    })
+    assert response.status_code == 200, response.text
+    assert any("Candidate limit (50) reached for value" in w for w in response.json()["warnings"])

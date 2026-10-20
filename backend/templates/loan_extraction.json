@@ -20,7 +20,7 @@
     },
     {
       "id": "customer_name", "kind": "entity", "entity_type": "text",
-      "instructions": "Select the customer's full name, not the agent's name. Select none if it was not stated.",
+      "instructions": "Select the customer's full name, not the agent's name. The transcript may be in English or Hindi; retain the original script and do not invent a corrected spelling. Select none if it was not stated.",
       "output_path": ["Customer_Details", "Name"]
     },
     {
@@ -46,7 +46,7 @@
     },
     {
       "id": "years_experience", "kind": "entity", "entity_type": "text",
-      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s+years?)\\b",
+      "pattern": "(?i)(?<!\\w)(\\d+(?:\\.\\d+)?\\s+(?:years?\\b|साल|वर्ष))",
       "instructions": "Select the customer's explicitly stated years of work experience, not age or loan tenure.",
       "output_path": ["Customer_Details", "Years of Experience"]
     },
@@ -84,13 +84,13 @@
     },
     {
       "id": "loan_rate", "kind": "entity", "entity_type": "text",
-      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s*%(?:\\s+(?:reducing|flat)(?:\\s+balance)?)?)",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s*%(?:\\s+(?:reducing|flat|रिड्यूसिंग|रिड्यूसिन्ग)(?:\\s+balance)?)?)",
       "instructions": "Select the explicitly stated interest rate and reducing or flat basis, not a fee percentage.",
       "output_path": ["Loan", "Rate"]
     },
     {
       "id": "loan_tenure", "kind": "entity", "entity_type": "text",
-      "pattern": "(?i)\\b(\\d+\\s+(?:months?|years?))\\b",
+      "pattern": "(?i)(?<!\\w)(\\d+\\s+(?:months?\\b|years?\\b|महीने|महीनों|महीना|माह|साल|वर्ष))",
       "instructions": "Select the final loan repayment tenure, not the customer's work experience.",
       "output_path": ["Loan", "Tenure"]
     },

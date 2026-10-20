@@ -33,6 +33,12 @@ NAME_CUES = (r"(?i:my name is|my name's|this is|i am|i'm|speaking with|speaking 
 NAME_RE = re.compile(NAME_CUES + r"\s+(?:(?:Mr|Mrs|Ms|Miss|Dr|Mx)\.?\s+)?([A-Z][a-z]+(?:[ '-][A-Z][a-z]+){0,2})")
 NAME_STOP = {"Sorry", "Calling", "Happy", "Glad", "Not", "Sure", "Fine", "Good", "Great", "Looking", "Here", "Afraid",
              "Thank", "Thanks", "Okay", "Yes", "No", "Please", "Just", "Still", "Having", "Trying", "Interested"}
+HINDI_NAME_WORD = r"[\u0900-\u0963\u0970-\u097f]+"
+HINDI_NAME_PATTERNS = [
+    re.compile(r"(?:मेरा नाम|नाम है)\s+(" + HINDI_NAME_WORD + r"(?:\s+" + HINDI_NAME_WORD + r"){0,2}?)(?=\s+है|[।,;!?\n]|$)"),
+    re.compile(r"(" + HINDI_NAME_WORD + r"(?:\s+" + HINDI_NAME_WORD + r"){0,2})\s+जी(?=\s|[।,;!?]|$)"),
+]
+HINDI_NAME_STOP = {"हाँ", "हां", "नहीं", "सर", "मैडम", "जी", "ओके", "बिलकुल"}
 MAX_CANDIDATES = 50
 _NESTED_QUANT = re.compile(r"\([^)]*[+*][^)]*\)[+*{]")
 
@@ -57,12 +63,17 @@ def _find_names(text: str) -> list[str]:
         words = [w for w in re.split(r"[ ]", m.group(1)) if w and w not in NAME_STOP]
         if words:
             out.append(" ".join(words))
+    for pattern in HINDI_NAME_PATTERNS:
+        for m in pattern.finditer(text):
+            value = m.group(1).strip()
+            if not any(word in HINDI_NAME_STOP for word in value.split()):
+                out.append(value)
     return out
 
 
 def _find_text(text: str) -> list[str]:
-    out: list[str] = []
-    for clause in re.split(r"[;!?\n]|\.(?=\s|$)", text):
+    out: list[str] = _find_names(text)
+    for clause in re.split(r"[;!?\n\u0964\u0965]|\.(?=\s|$)", text):
         clause = clause.strip(" \t,")
         if not clause:
             continue
@@ -76,6 +87,8 @@ def _find_text(text: str) -> list[str]:
             out.append(re.split(r"(?i),?\s+(?:pincode|pin code|PIN)\b", value)[0].rstrip(", "))
         if len(clause) <= 120:
             out.append(clause)
+        if re.search(r"[\u0900-\u097f]", clause):
+            out.extend(part.strip() for part in clause.split(",") if 0 < len(part.strip()) <= 120)
     return out
 
 

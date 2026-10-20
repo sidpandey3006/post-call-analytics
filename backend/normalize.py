@@ -44,6 +44,26 @@ def _extract_segments(data: Any) -> tuple[list[dict], dict]:
         if key in data:
             meta[key] = data[key]
 
+    # Azure fast transcription uses millisecond offsets and text directly on each phrase.
+    if isinstance(data.get("phrases"), list) and data["phrases"]:
+        segs = []
+        for p in data["phrases"]:
+            if not isinstance(p, dict):
+                continue
+            start = _ms_or_s(_num(p.get("offsetMilliseconds")), True)
+            duration = _ms_or_s(_num(p.get("durationMilliseconds")), True)
+            segs.append({"speaker": p.get("speaker"), "text": p.get("text", ""),
+                         "start": start,
+                         "end": round(start + duration, 2) if start is not None and duration is not None else None})
+        duration = _ms_or_s(_num(data.get("durationMilliseconds")), True)
+        if duration is not None:
+            meta.setdefault("duration", duration)
+        locales = {p["locale"] for p in data["phrases"] if isinstance(p, dict) and isinstance(p.get("locale"), str)}
+        if len(locales) == 1:
+            meta.setdefault("language", locales.pop())
+        return segs, meta
+    if isinstance(data.get("combinedPhrases"), list):
+        return _segments_from_list(data["combinedPhrases"]), meta
     # AssemblyAI: utterances with ms timestamps
     if isinstance(data.get("utterances"), list):
         return _segments_from_list(data["utterances"], ms=True), meta
@@ -81,7 +101,7 @@ def _extract_segments(data: Any) -> tuple[list[dict], dict]:
     # Whisper-style: plain text only
     if isinstance(data.get("text"), str):
         return [{"speaker": None, "text": data["text"], "start": None, "end": None}], meta
-    raise ValueError("Unrecognized transcript format: expected turns/segments/utterances/results/recognizedPhrases/text")
+    raise ValueError("Unrecognized transcript format: expected turns/segments/utterances/results/phrases/combinedPhrases/recognizedPhrases/text")
 
 
 def _segments_from_list(items: list, ms: bool = False) -> list[dict]:

@@ -20,7 +20,7 @@ Paste your TypeSafe API key in the header (kept in memory, sent per request, nev
 - **entity** (email, phone, amount, date, id, name, text) – candidate discovery finds literal values in the transcript, the model picks one with a Choice question (plus `none`), and code normalizes the verbatim value. Text entities use transcript phrases by default, or an optional regex whose first capture group is the value. The model never generates entity text.
 
 ## Transcript formats
-`{turns|segments|messages:[{speaker,text,start}]}`, AssemblyAI `utterances`, Deepgram `results.utterances`/`channels`, Azure `recognizedPhrases`, or plain `{text}`. Same-speaker segments are merged and turns are numbered. Label speakers `agent`/`customer` for best results.
+`{turns|segments|messages:[{speaker,text,start}]}`, AssemblyAI `utterances`, Deepgram `results.utterances`/`channels`, Azure batch `recognizedPhrases`, Azure fast transcription `phrases` (with `offsetMilliseconds`, `durationMilliseconds` and optional `speaker`), or plain `{text}`. Azure `combinedPhrases` is supported as a fallback when individual phrases are absent. Same-speaker segments are merged and turns are numbered. Numeric speaker IDs are preserved, not assumed to identify the agent or customer; label speakers `agent`/`customer` for best results.
 
 ## Deploy (GitHub Pages frontend + hosted backend)
 Pages is static, and Jev's API doesn't allow direct browser calls, so the backend must be hosted.
@@ -52,3 +52,5 @@ The gallery above the workspace offers ready-made voice scenarios (retail bankin
 Select **Loan call entity extraction**, replace the sample transcript with your transcript JSON, and click **Run analysis**. Results include the existing field cards and downloadable nested JSON with greeting checks, customer details, current/permanent addresses and loan terms. No chat deployment is required. The sample uses fictional data.
 
 Fields carry an `output_path` (one or two JSON keys) and optional `output_type: "number"` so the schema survives saved presets and field imports. Missing values become empty strings; loan amount, EMI, installment count and processing fee are JSON numbers when found. DOB and other string fields retain the selected transcript wording. The model selects among at most 50 literal candidates per field; unfamiliar wording, spoken-out numbers and long transcripts can leave values missing. Inspect candidates and review flags before using the output. This is extraction of stated facts, not financial advice or a credit decision.
+
+Hindi transcripts retain their original script. Candidate discovery recognizes Hindi sentence boundaries, common name cues and loan durations such as `36 महीने`; currency amounts written with digits and `₹` are supported. It does not translate or repair noisy STT, infer missing identity details, or guarantee recognition of numbers spelled out as words.

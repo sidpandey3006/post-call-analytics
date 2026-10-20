@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from entities import NONE
+from entities import MAX_CANDIDATES, NONE
 from generator import build_chat_body, build_sample_body, parse_generated, parse_sample, suggest_templates
 from providers import DecisionError, call_azure_chat, call_jev, call_microsoft
 from models import AnalyzeRequest, AnalyzeResponse
@@ -123,6 +123,10 @@ async def analyze(req: AnalyzeRequest):
         raise HTTPException(400, str(e))
     if not questions:
         raise HTTPException(400, "No questions to ask (entity fields found no candidates and no other fields defined)")
+    limited = [fid for fid, values in candidates.items() if len(values) == MAX_CANDIDATES]
+    if limited:
+        warnings.append(f"Candidate limit ({MAX_CANDIDATES}) reached for {', '.join(limited)}. "
+                        "Values later in the transcript may be missing; inspect the candidates or narrow the field regex.")
     body = {"state": state, "model": req.model, "questions": questions}
     try:
         if req.provider == "microsoft":
