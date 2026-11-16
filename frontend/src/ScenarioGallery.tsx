@@ -29,6 +29,14 @@ export function ScenarioGallery({ scenarios, selected, onPick, extra, focusGen, 
             <div className="muted gallery-note">
               <strong>{current.title}:</strong> {current.description}
               {current.notice && <> ⚠ {current.notice}</>}
+              {current.sample_output && <details>
+                <summary>Sample expected JSON (illustrative, not a live analysis)</summary>
+                <pre>{JSON.stringify(current.sample_output, null, 2)}</pre>
+                <a download={`${current.name}-sample-output.json`}
+                  href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(current.sample_output, null, 2))}`}>
+                  Download sample JSON
+                </a>
+              </details>}
             </div>
           )}
         </div>

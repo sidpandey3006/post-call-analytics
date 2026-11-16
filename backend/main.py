@@ -44,6 +44,7 @@ TEMPLATE_FILES = {"loan": "loan.json", "sales": "sales.json"}
 def list_scenarios():
     scenarios = json.loads((TEMPLATES / "scenarios.json").read_text(encoding="utf-8"))
     scenarios.append(json.loads((TEMPLATES / "loan_extraction.json").read_text(encoding="utf-8")))
+    scenarios.append(json.loads((TEMPLATES / "bharosa_loan_sales.json").read_text(encoding="utf-8")))
     return scenarios
 
 
@@ -141,7 +142,7 @@ async def analyze(req: AnalyzeRequest):
         raise HTTPException(400, str(e))
     except DecisionError as e:
         raise HTTPException(e.status if 400 <= e.status < 600 else 502, e.message)
-    results, flags = build_results(req.fields, raw.get("answers", {}), candidates)
+    results, flags = build_results(req.fields, raw.get("answers", {}), candidates, language=state.get("language"))
     try:
         structured_output = build_structured_output(req.fields, results)
     except ValueError as e:

@@ -1,0 +1,392 @@
+{
+  "name": "bharosa_bank_loan_sales",
+  "title": "Bharosa Bank Loan Sales",
+  "publisher": "Custom",
+  "tags": ["Voice", "Outbound sales", "Entity extraction"],
+  "description": "Extract the complete Bharosa outbound-loan sales schema, including customer details, locations, loan terms, customer questions, options and appointment checks.",
+  "notice": "English-first fictional example, not real bank terms or financial advice. Infer agent/customer from conversation behavior, never from speaker number. Numeric output uses 0-9 digits; missing numeric values are null and missing strings are empty. PAN_card_digits means the last four characters, including the final letter. Translation/transliteration of non-English text is unsupported and flagged for review; original extracted fields are preserved. Number words and unfamiliar wording can be missed. Process only authorized transcripts and review all results.",
+  "fields": [
+    {
+      "id": "greetings_start", "kind": "choice",
+      "instructions": "Infer the agent and customer from behavior, not speaker numbers. Did the agent greet the customer at the beginning of this outbound sales call?",
+      "criteria": {"Yes": "The agent explicitly greets the customer in the opening", "No": "No agent opening greeting"},
+      "output_path": ["Greetings_Start"]
+    },
+    {
+      "id": "greetings_end", "kind": "choice",
+      "instructions": "Infer roles from behavior, not speaker numbers. Did the agent greet, thank or offer a polite farewell to the customer in the closing exchange?",
+      "criteria": {"Yes": "An explicit agent closing greeting, thanks or farewell", "No": "No agent closing greeting, thanks or farewell"},
+      "output_path": ["Greetings_End"]
+    },
+    {
+      "id": "bharosa_introduction", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the agent explicitly identify the company they represent as Bharosa or Bharosa Bank? A customer mention alone does not count.",
+      "criteria": {"Yes": "Agent explicitly identifies themselves as representing Bharosa", "No": "No such agent introduction"},
+      "output_path": ["Bharosa_Introduction"]
+    },
+    {
+      "id": "right_person_contact", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the agent check they were speaking with the intended customer and receive confirmation? Merely saying a name is insufficient.",
+      "criteria": {"Yes": "Agent checks the intended customer's identity and the customer confirms", "No": "No confirmed right-person check"},
+      "output_path": ["Right_Person_Contact"]
+    },
+    {
+      "id": "customer_name_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)(?:my name is|customer name is)\\s+([^.;!?\\n]+)",
+      "instructions": "Infer roles from behavior. Select the customer's explicitly stated full name, never the agent's name. Keep the original script. Select none if absent.",
+      "output_path": ["Customer_Details", "Name_extracted"]
+    },
+    {
+      "id": "customer_name", "kind": "entity", "entity_type": "text", "source_field": "customer_name_extracted",
+      "instructions": "Use the selected customer name; Roman-script conversion is performed by output processing, not a second model question.",
+      "output_transform": "roman_text", "output_path": ["Customer_Details", "Name"]
+    },
+    {
+      "id": "customer_dob_extracted", "kind": "entity", "entity_type": "date",
+      "instructions": "Infer roles from behavior. Select only the customer's explicitly stated date of birth, not an appointment or disbursal date. Preserve the transcript wording; select none if absent.",
+      "output_path": ["Customer_Details", "DOB_extracted"]
+    },
+    {
+      "id": "customer_dob", "kind": "entity", "entity_type": "date", "source_field": "customer_dob_extracted",
+      "instructions": "Normalize the extracted DOB to DD/MM/YYYY using Indian day-first convention; do not infer missing components.",
+      "output_transform": "date_dmy", "output_path": ["Customer_Details", "DOB"]
+    },
+    {
+      "id": "pan_card_digits", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b([A-Z]{5}[0-9]{4}[A-Z]|[0-9]{3}[A-Z])\\b",
+      "instructions": "Infer roles from behavior. Select the customer's PAN or the explicitly confirmed last four PAN characters. Do not select an unrelated ID. Select none if absent; output processing retains only the last four characters.",
+      "output_transform": "pan_last_four", "output_path": ["Customer_Details", "PAN_card_digits"],
+      "min_confidence": 0.9
+    },
+    {
+      "id": "occupation_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)(?:occupation is|profession is)\\s+([^.;!?\\n]+)",
+      "instructions": "Infer roles from behavior. Select the customer's stated occupation or employment status, not an option merely offered by the agent. Preserve the original wording.",
+      "output_path": ["Customer_Details", "Occupation_extracted"]
+    },
+    {
+      "id": "occupation", "kind": "entity", "entity_type": "text", "source_field": "occupation_extracted",
+      "instructions": "Use the extracted occupation in English; unsupported translation must be flagged, not invented.",
+      "output_transform": "english_text", "output_path": ["Customer_Details", "Occupation"]
+    },
+    {
+      "id": "company_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)(?:work for|work at|employer is|company is)\\s+([^.;!?\\n]+)",
+      "instructions": "Infer roles from behavior. Select the customer's employer or company, not the agent's lender. Preserve the original script; select none if absent.",
+      "output_path": ["Customer_Details", "Company_extracted"]
+    },
+    {
+      "id": "company", "kind": "entity", "entity_type": "text", "source_field": "company_extracted",
+      "instructions": "Use the extracted company name in Roman script; unsupported transliteration is flagged.",
+      "output_transform": "roman_text", "output_path": ["Customer_Details", "Company"]
+    },
+    {
+      "id": "years_experience", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s+years?)\\b",
+      "instructions": "Infer roles from behavior. Select the customer's years of work experience, not age or loan tenure. Do not calculate from dates. Select none if not stated in years.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Customer_Details", "Years_of_Experience"]
+    },
+    {
+      "id": "salary", "kind": "entity", "entity_type": "amount",
+      "instructions": "Infer roles from behavior. Select the customer's explicitly stated salary amount, excluding turnover and loan figures. Preserve the stated monthly or annual basis; do not annualize or divide it.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Customer_Details", "Salary"]
+    },
+    {
+      "id": "turnover", "kind": "entity", "entity_type": "amount",
+      "instructions": "Infer roles from behavior. Select explicitly stated business turnover, not profit, salary or loan amount. Preserve the stated period; do not calculate it. Select none if absent.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Customer_Details", "TurnOver"]
+    },
+    {
+      "id": "current_pincode", "kind": "entity", "entity_type": "text", "pattern": "\\b([1-9][0-9]{5})\\b",
+      "instructions": "Infer roles from behavior. Select the six-digit pincode of the customer's current residence, not the permanent residence. Select none if absent.",
+      "output_path": ["Current_Location", "Pincode"]
+    },
+    {
+      "id": "current_city_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)(?:current city is|currently live in)\\s+([^,.;!?\\n]+)",
+      "instructions": "Infer roles from behavior. Select the customer's explicitly stated current city, excluding PIN code or unrelated address information. Preserve the original script; do not infer from PIN.",
+      "output_path": ["Current_Location", "City_extracted"]
+    },
+    {
+      "id": "current_city", "kind": "entity", "entity_type": "text", "source_field": "current_city_extracted",
+      "instructions": "Use the extracted current city in Roman script; unsupported transliteration is flagged.",
+      "output_transform": "roman_text", "output_path": ["Current_Location", "City"]
+    },
+    {
+      "id": "current_residence_type", "kind": "choice",
+      "instructions": "Infer roles from behavior. What residence type is explicitly stated for the customer's current home? Do not infer from permanent-home ownership.",
+      "criteria": {"owned": "Customer explicitly owns the current home", "rented": "Customer explicitly rents the current home", "": "Not stated or neither option is established"},
+      "output_path": ["Current_Location", "ResidenceType"]
+    },
+    {
+      "id": "permanent_pincode", "kind": "entity", "entity_type": "text", "pattern": "\\b([1-9][0-9]{5})\\b",
+      "instructions": "Infer roles from behavior. Select the pincode of the permanent residence. Reuse a current-address value only if the customer explicitly confirms both addresses are the same.",
+      "output_path": ["Permanent_Location", "Pincode"]
+    },
+    {
+      "id": "permanent_city_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)(?:permanent city is|permanent residence is in)\\s+([^,.;!?\\n]+)",
+      "instructions": "Infer roles from behavior. Select the customer's explicitly stated permanent city, not a hometown unless established as the permanent residence. Preserve the script; do not infer from PIN.",
+      "output_path": ["Permanent_Location", "City_extracted"]
+    },
+    {
+      "id": "permanent_city", "kind": "entity", "entity_type": "text", "source_field": "permanent_city_extracted",
+      "instructions": "Use the extracted permanent city in Roman script; unsupported transliteration is flagged.",
+      "output_transform": "roman_text", "output_path": ["Permanent_Location", "City"]
+    },
+    {
+      "id": "permanent_residence_type", "kind": "choice",
+      "instructions": "Infer roles from behavior. What residence type is explicitly stated for the customer's permanent home? Do not copy the current residence type without explicit confirmation.",
+      "criteria": {"owned": "Customer explicitly owns the permanent home", "rented": "Customer explicitly rents the permanent home", "": "Not stated or neither option is established"},
+      "output_path": ["Permanent_Location", "ResidenceType"]
+    },
+    {
+      "id": "loan_amount", "kind": "entity", "entity_type": "amount",
+      "instructions": "Infer roles from behavior. Select the agent's final specifically discussed or offered loan principal. Prefer the final amount over an initial eligibility ceiling. Exclude EMI, salary, fees, insurance and customer-only requests not adopted by the agent.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Loan", "Amount"]
+    },
+    {
+      "id": "loan_rate", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent))",
+      "instructions": "Infer roles from behavior. Select the loan interest rate, not a fee, foreclosure percentage or insurance rate. Do not calculate it.",
+      "output_transform": "percent", "output_path": ["Loan", "Rate"]
+    },
+    {
+      "id": "loan_rate_type", "kind": "choice",
+      "instructions": "Infer roles from behavior. What interest-rate basis did the agent explicitly state for the loan? Do not infer it from the rate or EMI.",
+      "criteria": {"reducing": "Explicit reducing-balance interest", "flat": "Explicit flat interest", "": "Basis not stated"},
+      "output_path": ["Loan", "Rate_type"]
+    },
+    {
+      "id": "loan_tenure", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s*(?:months?|years?))\\b",
+      "instructions": "Infer roles from behavior. Select the final loan repayment tenure, not work experience, insurance coverage, or a lock-in period. Output processing converts explicitly stated years to months.",
+      "output_type": "number", "output_default": null, "output_transform": "months",
+      "output_path": ["Loan", "Tenure_in_months"]
+    },
+    {
+      "id": "loan_emi", "kind": "entity", "entity_type": "amount",
+      "instructions": "Infer roles from behavior. Select the explicitly quoted recurring monthly EMI for the final loan. Exclude fees and principal; do not calculate it.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Loan", "EMI"]
+    },
+    {
+      "id": "processing_fee", "kind": "entity", "entity_type": "amount",
+      "instructions": "Infer roles from behavior. Select the explicitly quoted processing fee amount. Do not add tax or convert a percentage into an amount; select none if no monetary fee is stated.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Loan", "Processing_fee"]
+    },
+    {
+      "id": "interested", "kind": "choice",
+      "instructions": "Infer roles from behavior. Classify the customer's final explicitly expressed interest in the loan, not the agent's enthusiasm. If no clear interest or refusal is established, choose Maybe.",
+      "criteria": {"Yes": "Explicit interest or request to proceed", "No": "Explicit disinterest or rejection", "Maybe": "Conditional, undecided, conflicting or unclear interest"},
+      "output_path": ["Customer_Intent_Queries", "Interested"]
+    },
+    {
+      "id": "actual_interested_amount", "kind": "entity", "entity_type": "amount",
+      "instructions": "Infer roles from behavior. Select the amount the customer personally requests or explicitly expresses interest in. Do not substitute an agent-only offer or ceiling.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Customer_Intent_Queries", "Actual_interested_loan_amount"]
+    },
+    {
+      "id": "asked_offer_amount", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the customer ask how much loan was available or what the offered amount was? An agent volunteering the amount does not count.",
+      "criteria": {"Yes": "Customer explicitly asks about the offered loan amount", "No": "Customer does not ask"},
+      "output_path": ["Customer_Intent_Queries", "Asked_Offer_Amount"]
+    },
+    {
+      "id": "asked_outflow", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the customer ask about the total repayment or overall outflow across the loan, rather than only EMI?",
+      "criteria": {"Yes": "Customer explicitly asks about total repayment or total outflow", "No": "No such customer question"},
+      "output_path": ["Customer_Intent_Queries", "Asked_Outflow"]
+    },
+    {
+      "id": "asked_emi", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the customer ask about the EMI or monthly installment? Agent-only discussion does not count.",
+      "criteria": {"Yes": "Customer explicitly asks about EMI", "No": "No such customer question"},
+      "output_path": ["Customer_Intent_Queries", "Asked_EMI"]
+    },
+    {
+      "id": "asked_tenure", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the customer ask how long the loan would run or how many repayment months there would be?",
+      "criteria": {"Yes": "Customer explicitly asks about loan tenure", "No": "No such customer question"},
+      "output_path": ["Customer_Intent_Queries", "Asked_Tenure"]
+    },
+    {
+      "id": "asked_branch", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the customer ask about visiting a branch or whether a branch visit was required?",
+      "criteria": {"Yes": "Customer explicitly asks about a branch visit", "No": "No such customer question"},
+      "output_path": ["Customer_Intent_Queries", "Asked_about_Branch"]
+    },
+    {
+      "id": "urgency", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the customer explicitly express urgency or a deadline for needing the loan? Agent-created urgency does not count.",
+      "criteria": {"Yes": "Customer explicitly states an urgent need or deadline", "No": "Customer does not state urgency"},
+      "output_path": ["Customer_Intent_Queries", "Urgency_mentioned_on_Loan"]
+    },
+    {
+      "id": "customer_sentiment", "kind": "choice",
+      "instructions": "Infer roles from behavior. Classify only the customer's expressed overall tone, not creditworthiness or suitability. Positive means clearly pleased or enthusiastic; Mild means mildly concerned or hesitant without hostility; Negative means clearly dissatisfied or hostile; Neutral means matter-of-fact or insufficient explicit tone evidence.",
+      "criteria": {"Positive": "Clearly pleased or enthusiastic", "Mild": "Mild concern or hesitation", "Negative": "Clear dissatisfaction or hostility", "Neutral": "Matter-of-fact or insufficient explicit tone evidence"},
+      "output_path": ["Customer_Sentiment"]
+    },
+    {
+      "id": "life_insurance_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)life insurance:\\s*([^.;!?\\n]+)",
+      "instructions": "Select the explicitly stated life-insurance option details, including optionality and premium when stated. Preserve wording; do not infer coverage or purchase.",
+      "output_path": ["Loan_options", "Life_Insurance_extracted"]
+    },
+    {
+      "id": "health_insurance_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)health insurance:\\s*([^.;!?\\n]+)",
+      "instructions": "Select the explicitly stated health-insurance option details. Preserve wording; do not infer coverage or purchase.",
+      "output_path": ["Loan_options", "Health_Insurance_extracted"]
+    },
+    {
+      "id": "fpr_amount", "kind": "entity", "entity_type": "amount",
+      "instructions": "Select only the explicitly stated Flexi Payment Reserve or FPR amount, not principal or fees. Do not infer product features.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Loan_options", "FPR_Amount"]
+    },
+    {
+      "id": "cibil_consent", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the agent explicitly request and obtain the customer's consent for a CIBIL or credit-bureau check? Generic agreement to hear the offer is not consent.",
+      "criteria": {"Yes": "Agent requests bureau-check consent and the customer explicitly grants it", "No": "Consent is discussed but refused or not obtained", "": "Bureau consent is not mentioned"},
+      "output_path": ["Loan_options", "CIBIL_Consent"]
+    },
+    {
+      "id": "part_payment_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)part payment:\\s*([^.;!?\\n]+)",
+      "instructions": "Select the explicitly stated part-payment rules, charges or timing. Preserve wording and do not invent terms.",
+      "output_path": ["Loan_options", "Information_on_Part_Payment_extracted"]
+    },
+    {
+      "id": "foreclosure_extracted", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)foreclosure:\\s*([^.;!?\\n]+)",
+      "instructions": "Select the explicitly stated foreclosure or early-closure rules. Preserve wording and do not invent terms.",
+      "output_path": ["Loan_options", "Information_on_Foreclosure_extracted"]
+    },
+    {
+      "id": "foreclosure_charge", "kind": "entity", "entity_type": "text",
+      "pattern": "(?i)\\b(\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent))",
+      "instructions": "Select the explicit foreclosure charge percentage, not interest or another fee. Do not calculate a monetary charge.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Loan_options", "Foreclosure_charge"]
+    },
+    {
+      "id": "bpi", "kind": "entity", "entity_type": "amount",
+      "instructions": "Select the explicitly stated Broken Period Interest or BPI monetary amount. Do not calculate it or substitute the annual interest rate.",
+      "output_type": "number", "output_default": null, "output_transform": "number",
+      "output_path": ["Loan_options", "BPI"]
+    },
+    {
+      "id": "life_insurance", "kind": "entity", "entity_type": "text", "source_field": "life_insurance_extracted",
+      "instructions": "Use the extracted life-insurance details in English; unsupported translation is flagged.",
+      "output_transform": "english_text", "output_path": ["Loan_options", "Life_Insurance"]
+    },
+    {
+      "id": "health_insurance", "kind": "entity", "entity_type": "text", "source_field": "health_insurance_extracted",
+      "instructions": "Use the extracted health-insurance details in English; unsupported translation is flagged.",
+      "output_transform": "english_text", "output_path": ["Loan_options", "Health_Insurance"]
+    },
+    {
+      "id": "part_payment", "kind": "entity", "entity_type": "text", "source_field": "part_payment_extracted",
+      "instructions": "Use the extracted part-payment details in English; unsupported translation is flagged.",
+      "output_transform": "english_text", "output_path": ["Loan_options", "Information_on_Part_Payment"]
+    },
+    {
+      "id": "foreclosure", "kind": "entity", "entity_type": "text", "source_field": "foreclosure_extracted",
+      "instructions": "Use the extracted foreclosure details in English; unsupported translation is flagged.",
+      "output_transform": "english_text", "output_path": ["Loan_options", "Information_on_Foreclosure"]
+    },
+    {
+      "id": "sales_manager_appointment", "kind": "choice",
+      "instructions": "Infer roles from behavior. Was an appointment with a sales or field manager actually scheduled and accepted by the customer? A proposed visit or vague follow-up alone does not count.",
+      "criteria": {"Yes": "Customer and agent agree to a sales/field manager appointment", "No": "No accepted appointment"},
+      "output_path": ["sales_manager_appointment_taken"]
+    },
+    {
+      "id": "documents", "kind": "choice",
+      "instructions": "Infer roles from behavior. Did the agent request or discuss documents required for the loan, such as ID, salary slips or bank statements?",
+      "criteria": {"Yes": "Agent explicitly requests or discusses required loan documents", "No": "No agent discussion of required documents"},
+      "output_path": ["Documents"]
+    }
+  ],
+  "sample": {
+    "call_id": "fictional-bharosa-bank-loan-sales",
+    "language": "en-IN",
+    "direction": "outbound",
+    "text": "Speaker 2: Hello, good morning. I am Kavya calling from Bharosa Bank about a loan offer. Am I speaking with Arjun Mehta?\nSpeaker 1: Yes, my name is Arjun Mehta.\nSpeaker 2: Thank you. For this fictional demonstration, please confirm your date of birth and only the last four PAN characters, not the full PAN.\nSpeaker 1: My date of birth is 05/08/1991. My last four PAN characters are 076L.\nSpeaker 2: What are your occupation, employer, work experience and income?\nSpeaker 1: My occupation is salaried. I work for Example Technologies. I have 8 years of work experience. My monthly salary is Rs 85,000. My side business has annual turnover of Rs 12 lakh.\nSpeaker 2: Please confirm the current and permanent cities, pincodes and whether each home is owned or rented.\nSpeaker 1: My current city is Pune. My current pincode is 411001. My current home is rented. My permanent city is Jaipur. My permanent pincode is 302001. My permanent home is owned.\nSpeaker 2: The initial eligibility ceiling is Rs 5 lakh. All figures in this example are fictional, not actual bank terms.\nSpeaker 1: What loan amount can you offer? I am interested in Rs 3.5 lakh. I need it urgently by Friday. What is the EMI, what is the tenure, and what is my total outflow? Do I need to visit a branch?\nSpeaker 2: The final offered loan principal is Rs 3.5 lakh. The interest rate is 18% reducing. The tenure is 36 months. The monthly EMI is Rs 12,653. The processing fee is Rs 3,500. Total repayment is Rs 455,508 excluding fees and optional products. A branch visit is not required. These are stated example figures, not a calculation or recommendation.\nSpeaker 1: That sounds good. I am interested and would like to proceed with Rs 3.5 lakh. Please explain the optional products and early-payment terms.\nSpeaker 2: Life insurance: Optional life cover with a one-time premium of Rs 2,000. Health insurance: Optional health cover with an annual premium of Rs 1,500. The Flexi Payment Reserve amount is Rs 10,000. Part payment: Allowed after 6 EMIs with no part-payment charge. Foreclosure: Allowed after 12 EMIs with a charge of 2% of outstanding principal. Broken Period Interest is Rs 1,234.\nSpeaker 1: Thank you, that is clear. I have not agreed to buy either insurance option.\nSpeaker 2: May I have your consent to run a CIBIL credit-bureau check for this loan application?\nSpeaker 1: Yes, I consent to the CIBIL credit-bureau check.\nSpeaker 2: Please keep your identity proof, bank statements and latest salary slips ready. Can our sales manager meet you tomorrow at 3 PM?\nSpeaker 1: Yes, tomorrow at 3 PM works for the sales-manager appointment. I am pleased with the explanation.\nSpeaker 2: Thank you for your time. Have a good day. Goodbye.\nSpeaker 1: Goodbye."
+  },
+  "sample_output": {
+    "Greetings_Start": "Yes",
+    "Greetings_End": "Yes",
+    "Bharosa_Introduction": "Yes",
+    "Right_Person_Contact": "Yes",
+    "Customer_Details": {
+      "Name_extracted": "Arjun Mehta",
+      "Name": "Arjun Mehta",
+      "DOB_extracted": "05/08/1991",
+      "DOB": "05/08/1991",
+      "PAN_card_digits": "076L",
+      "Occupation_extracted": "salaried",
+      "Occupation": "salaried",
+      "Company_extracted": "Example Technologies",
+      "Company": "Example Technologies",
+      "Years_of_Experience": 8,
+      "Salary": 85000,
+      "TurnOver": 1200000
+    },
+    "Current_Location": {
+      "Pincode": "411001",
+      "City_extracted": "Pune",
+      "City": "Pune",
+      "ResidenceType": "rented"
+    },
+    "Permanent_Location": {
+      "Pincode": "302001",
+      "City_extracted": "Jaipur",
+      "City": "Jaipur",
+      "ResidenceType": "owned"
+    },
+    "Loan": {
+      "Amount": 350000,
+      "Rate": "18%",
+      "Rate_type": "reducing",
+      "Tenure_in_months": 36,
+      "EMI": 12653,
+      "Processing_fee": 3500
+    },
+    "Customer_Intent_Queries": {
+      "Interested": "Yes",
+      "Actual_interested_loan_amount": 350000,
+      "Asked_Offer_Amount": "Yes",
+      "Asked_Outflow": "Yes",
+      "Asked_EMI": "Yes",
+      "Asked_Tenure": "Yes",
+      "Asked_about_Branch": "Yes",
+      "Urgency_mentioned_on_Loan": "Yes"
+    },
+    "Customer_Sentiment": "Positive",
+    "Loan_options": {
+      "Life_Insurance_extracted": "Optional life cover with a one-time premium of Rs 2,000",
+      "Health_Insurance_extracted": "Optional health cover with an annual premium of Rs 1,500",
+      "FPR_Amount": 10000,
+      "CIBIL_Consent": "Yes",
+      "Information_on_Part_Payment_extracted": "Allowed after 6 EMIs with no part-payment charge",
+      "Information_on_Foreclosure_extracted": "Allowed after 12 EMIs with a charge of 2% of outstanding principal",
+      "Foreclosure_charge": 2,
+      "BPI": 1234,
+      "Life_Insurance": "Optional life cover with a one-time premium of Rs 2,000",
+      "Health_Insurance": "Optional health cover with an annual premium of Rs 1,500",
+      "Information_on_Part_Payment": "Allowed after 6 EMIs with no part-payment charge",
+      "Information_on_Foreclosure": "Allowed after 12 EMIs with a charge of 2% of outstanding principal"
+    },
+    "sales_manager_appointment_taken": "Yes",
+    "Documents": "Yes"
+  }
+}

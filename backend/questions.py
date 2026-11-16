@@ -15,6 +15,7 @@ def build_questions(fields: list[FieldDef], text: str) -> tuple[dict, dict[str, 
     candidates: dict[str, list[str]] = {}
     seen: set[str] = set()
     paths: list[list[str]] = []
+    entity_fields: set[str] = set()
     for f in fields:
         if f.id in seen:
             raise FieldError(f"Duplicate field id: {f.id}")
@@ -25,6 +26,13 @@ def build_questions(fields: list[FieldDef], text: str) -> tuple[dict, dict[str, 
             if any(p[:len(f.output_path)] == f.output_path or f.output_path[:len(p)] == p for p in paths):
                 raise FieldError(f"Field '{f.id}' has a duplicate or conflicting output path")
             paths.append(f.output_path)
+        if f.source_field:
+            if f.kind != "entity" or f.source_field not in entity_fields:
+                raise FieldError(f"Field '{f.id}' must reference an earlier entity field")
+            entity_fields.add(f.id)
+            continue
+        if f.kind == "entity":
+            entity_fields.add(f.id)
         if f.kind == "noul":
             q: dict = {"type": "noul", "instructions": f.instructions}
             if f.criteria:

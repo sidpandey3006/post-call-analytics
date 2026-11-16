@@ -44,6 +44,7 @@ export type Scenario = {
   notice?: string
   fields: FieldDef[]
   sample: unknown
+  sample_output?: Record<string, unknown>
 }
 export const fetchScenarios = () => request<Scenario[]>('/api/scenarios')
 

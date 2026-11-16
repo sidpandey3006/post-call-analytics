@@ -90,7 +90,7 @@ export function Results({ data, elapsedMs, provider }: { data: AnalyzeResponse; 
           </div>
           {data.structured_output && <div className="card">
             <strong>Extracted JSON</strong>
-            <p className="muted">Missing values are empty strings. Candidate matching can miss unfamiliar wording; review the field results before using this output.</p>
+            <p className="muted">Missing values follow the field schema (empty strings or null). Candidate matching and output conversions can require review; inspect field results before using this output.</p>
             <pre>{JSON.stringify(data.structured_output, null, 2)}</pre>
             <button className="small" onClick={() => downloadJson(data.structured_output, 'extracted-entities.json')}>Download extracted JSON</button>
           </div>}

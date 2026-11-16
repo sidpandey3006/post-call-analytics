@@ -19,6 +19,10 @@ class FieldDef(BaseModel):
     pattern: str | None = Field(default=None, max_length=200)
     output_path: list[str] | None = Field(default=None, min_length=1, max_length=2)
     output_type: Literal["string", "number"] = "string"
+    output_default: Literal[""] | None = ""
+    source_field: str | None = None
+    output_transform: Literal["roman_text", "english_text", "date_dmy", "pan_last_four",
+                              "number", "months", "percent"] | None = None
     # Noul probabilities within [low, high] are flagged; choice/score/entity flag if confidence < min_confidence
     min_confidence: float = 0.7
     uncertain_band: tuple[float, float] = (0.3, 0.7)

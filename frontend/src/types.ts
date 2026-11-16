@@ -11,6 +11,9 @@ export interface FieldDef {
   pattern?: string | null
   output_path?: string[] | null
   output_type?: 'string' | 'number'
+  output_default?: '' | null
+  source_field?: string | null
+  output_transform?: 'roman_text' | 'english_text' | 'date_dmy' | 'pan_last_four' | 'number' | 'months' | 'percent' | null
   min_confidence: number
   uncertain_band: [number, number]
 }

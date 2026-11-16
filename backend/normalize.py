@@ -35,6 +35,8 @@ def _ms_or_s(value: float | None, ms: bool) -> float | None:
 def _extract_segments(data: Any) -> tuple[list[dict], dict]:
     """Return raw segments [{speaker,text,start,end}] and extra metadata."""
     meta: dict = {}
+    if isinstance(data, str):
+        return _speaker_lines(data), meta
     if isinstance(data, list):
         return _segments_from_list(data), meta
     if not isinstance(data, dict):
@@ -100,8 +102,22 @@ def _extract_segments(data: Any) -> tuple[list[dict], dict]:
         return segs, meta
     # Whisper-style: plain text only
     if isinstance(data.get("text"), str):
+        if re.match(r"\s*Speaker\s+\d+\s*:", data["text"], re.IGNORECASE):
+            return _speaker_lines(data["text"]), meta
         return [{"speaker": None, "text": data["text"], "start": None, "end": None}], meta
     raise ValueError("Unrecognized transcript format: expected turns/segments/utterances/results/phrases/combinedPhrases/recognizedPhrases/text")
+
+
+def _speaker_lines(text: str) -> list[dict]:
+    segments = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        match = re.fullmatch(r"\s*Speaker\s+(\d+)\s*:\s*(\S.*)", line, re.IGNORECASE)
+        if not match:
+            raise ValueError("Diarized text requires one non-empty 'Speaker N: text' segment per line")
+        segments.append({"speaker": match[1], "text": match[2], "start": None, "end": None})
+    return segments
 
 
 def _segments_from_list(items: list, ms: bool = False) -> list[dict]:

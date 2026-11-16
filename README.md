@@ -54,3 +54,34 @@ Select **Loan call entity extraction**, replace the sample transcript with your 
 Fields carry an `output_path` (one or two JSON keys) and optional `output_type: "number"` so the schema survives saved presets and field imports. Missing values become empty strings; loan amount, EMI, installment count and processing fee are JSON numbers when found. DOB and other string fields retain the selected transcript wording. The model selects among at most 50 literal candidates per field; unfamiliar wording, spoken-out numbers and long transcripts can leave values missing. Inspect candidates and review flags before using the output. This is extraction of stated facts, not financial advice or a credit decision.
 
 Hindi transcripts retain their original script. Candidate discovery recognizes Hindi sentence boundaries, common name cues and loan durations such as `36 महीने`; currency amounts written with digits and `₹` are supported. It does not translate or repair noisy STT, infer missing identity details, or guarantee recognition of numbers spelled out as words.
+
+### Bharosa Bank Loan Sales
+
+Select **Bharosa Bank Loan Sales** for the full outbound-sales schema: greetings,
+identity checks, customer details, both residences, loan terms, customer questions,
+expressed sentiment, insurance and repayment options, bureau consent, documents and
+manager appointment. The scenario loads a fictional English call and exposes
+**Sample expected JSON** beneath its description. This is a reference example,
+not a recorded model result or actual bank product terms.
+
+The sample uses `{"language": "en-IN", "direction": "outbound", "text": "Speaker 2: ...\nSpeaker 1: ..."}`.
+One `Speaker N: text` segment is required per line. Speaker numbers are preserved;
+the questions instruct the model to infer roles from the conversation, with the
+existing role-label warning retained. Speaker 1 is the customer in this example.
+
+`source_field` derives a field from an earlier selected entity without asking the
+model to extract it again. `output_transform` handles day-first DOB formatting,
+last-four-character PAN output (`APKPP6076L` becomes `076L`), numeric scaling,
+tenure in months and percent formatting. Numeric fields use `output_default: null`;
+string fields default to `""`. `Loan.Rate` remains a percent string such as `"18%"`.
+Salary and turnover retain the stated period; the requested output schema has no
+separate period field. Numeric characters mean decimal digits `0-9`, not Roman
+numerals. Insurance and repayment details preserve the selected wording.
+
+This scenario is English-first: already-English/Roman text is reused for the
+corresponding normalized fields. Non-ASCII translation or transliteration is not
+implemented; original extracted text is preserved, the derived field is empty and
+explicitly flagged for review. Digit-written Unicode numbers are supported by
+output conversion; spelling out numbers or IDs is not guaranteed to match a
+candidate. This is extraction of stated information, not financial advice, truth
+verification or a credit decision.

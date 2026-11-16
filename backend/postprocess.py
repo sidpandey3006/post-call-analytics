@@ -3,6 +3,7 @@ from decimal import Decimal, InvalidOperation
 
 from entities import NONE, normalize_entity
 from models import FieldDef, FieldResult
+from output_transforms import transform_output
 
 
 def _confidence(a: dict) -> float | None:
@@ -21,13 +22,16 @@ def _confidence(a: dict) -> float | None:
 
 
 def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, list[str]],
-                  reference: datetime | None = None) -> tuple[list[FieldResult], list[str]]:
+                  reference: datetime | None = None, language: str | None = None) -> tuple[list[FieldResult], list[str]]:
     results: list[FieldResult] = []
     flags: list[str] = []
+    by_id: dict[str, FieldResult] = {}
     for f in fields:
         r = FieldResult(id=f.id, kind=f.kind)
         a = answers.get(f.id)
-        if f.kind == "entity":
+        if f.source_field:
+            r = by_id[f.source_field].model_copy(deep=True, update={"id": f.id})
+        elif f.kind == "entity":
             r.entity_candidates = candidates.get(f.id, [])
             if a is None:
                 r.needs_review = bool(r.entity_candidates)
@@ -62,9 +66,16 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
             r.legend = a.get("legend")
             if r.confidence is not None and r.confidence < f.min_confidence:
                 r.needs_review, r.review_reason = True, f"Low confidence ({r.confidence})"
+        if f.output_transform and r.value is not None:
+            try:
+                r.normalized = transform_output(str(r.value), f.output_transform, language)
+            except ValueError as e:
+                r.normalized = None
+                r.needs_review, r.review_reason = True, str(e)
         if r.needs_review:
             flags.append(f"{f.id}: {r.review_reason}")
         results.append(r)
+        by_id[f.id] = r
     return results, flags
 
 
@@ -75,8 +86,10 @@ def build_structured_output(fields: list[FieldDef], results: list[FieldResult]) 
         if not f.output_path:
             continue
         r = by_id[f.id]
-        value = r.value if r.value is not None else ""
-        if f.output_type == "number" and value != "":
+        value = r.normalized if f.output_transform else r.value
+        if value is None:
+            value = f.output_default
+        if f.output_type == "number" and value not in ("", None):
             source = r.normalized.get("amount") if isinstance(r.normalized, dict) else value
             try:
                 number = Decimal(str(source).replace(",", ""))

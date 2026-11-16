@@ -40,7 +40,9 @@ function FieldCard({ f, onChange, onRemove }: { f: FieldDef; onChange: (f: Field
   const patch = (p: Partial<FieldDef>) => onChange({ ...f, ...p })
   const changeKind = (kind: Kind) => {
     const base = newField(kind)
-    onChange({ ...base, id: f.id, instructions: f.instructions, output_path: f.output_path, output_type: f.output_type })
+    onChange({ ...base, id: f.id, instructions: f.instructions, output_path: f.output_path,
+      output_type: f.output_type, output_default: f.output_default, output_transform: f.output_transform,
+      source_field: kind === 'entity' ? f.source_field : undefined })
   }
   return (
     <div className="card">
@@ -71,6 +73,8 @@ function FieldCard({ f, onChange, onRemove }: { f: FieldDef; onChange: (f: Field
         </label>
       )}
       {f.output_path && <div className="muted">JSON output: <code>{f.output_path.join(' / ')}</code> ({f.output_type ?? 'string'})</div>}
+      {f.source_field && <div className="muted">Derived from: <code>{f.source_field}</code> (no extra model question)</div>}
+      {f.output_transform && <div className="muted">Output formatting: <code>{f.output_transform}</code></div>}
       <div className="row muted">
         {f.kind === 'noul' ? (
           <>

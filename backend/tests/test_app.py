@@ -260,7 +260,7 @@ def test_scenarios_valid_and_samples_support_entities():
     from normalize import normalize_transcript, transcript_text
     from questions import build_questions
     d = client.get("/api/scenarios").json()
-    assert len(d) == 9
+    assert len(d) == 10
     for s in d:
         fields = [FieldDef(**f) for f in s["fields"]]
         assert len({f.id for f in fields}) == len(fields), s["name"]
@@ -268,7 +268,7 @@ def test_scenarios_valid_and_samples_support_entities():
         text = transcript_text(state)
         build_questions(fields, text)
         for f in fields:
-            if f.kind == "entity":
+            if f.kind == "entity" and not f.source_field:
                 candidates = find_candidates(f.entity_type, text, f.pattern)
                 if s["name"] != "loan_entity_extraction":
                     assert candidates, f"{s['name']}:{f.id} has no candidate in sample"
