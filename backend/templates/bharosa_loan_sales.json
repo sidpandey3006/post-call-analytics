@@ -320,7 +320,88 @@
     "call_id": "fictional-bharosa-bank-loan-sales",
     "language": "en-IN",
     "direction": "outbound",
-    "text": "Speaker 2: Hello, good morning. I am Kavya calling from Bharosa Bank about a loan offer. Am I speaking with Arjun Mehta?\nSpeaker 1: Yes, my name is Arjun Mehta.\nSpeaker 2: Thank you. For this fictional demonstration, please confirm your date of birth and only the last four PAN characters, not the full PAN.\nSpeaker 1: My date of birth is 05/08/1991. My last four PAN characters are 076L.\nSpeaker 2: What are your occupation, employer, work experience and income?\nSpeaker 1: My occupation is salaried. I work for Example Technologies. I have 8 years of work experience. My monthly salary is Rs 85,000. My side business has annual turnover of Rs 12 lakh.\nSpeaker 2: Please confirm the current and permanent cities, pincodes and whether each home is owned or rented.\nSpeaker 1: My current city is Pune. My current pincode is 411001. My current home is rented. My permanent city is Jaipur. My permanent pincode is 302001. My permanent home is owned.\nSpeaker 2: The initial eligibility ceiling is Rs 5 lakh. All figures in this example are fictional, not actual bank terms.\nSpeaker 1: What loan amount can you offer? I am interested in Rs 3.5 lakh. I need it urgently by Friday. What is the EMI, what is the tenure, and what is my total outflow? Do I need to visit a branch?\nSpeaker 2: The final offered loan principal is Rs 3.5 lakh. The interest rate is 18% reducing. The tenure is 36 months. The monthly EMI is Rs 12,653. The processing fee is Rs 3,500. Total repayment is Rs 455,508 excluding fees and optional products. A branch visit is not required. These are stated example figures, not a calculation or recommendation.\nSpeaker 1: That sounds good. I am interested and would like to proceed with Rs 3.5 lakh. Please explain the optional products and early-payment terms.\nSpeaker 2: Life insurance: Optional life cover with a one-time premium of Rs 2,000. Health insurance: Optional health cover with an annual premium of Rs 1,500. The Flexi Payment Reserve amount is Rs 10,000. Part payment: Allowed after 6 EMIs with no part-payment charge. Foreclosure: Allowed after 12 EMIs with a charge of 2% of outstanding principal. Broken Period Interest is Rs 1,234.\nSpeaker 1: Thank you, that is clear. I have not agreed to buy either insurance option.\nSpeaker 2: May I have your consent to run a CIBIL credit-bureau check for this loan application?\nSpeaker 1: Yes, I consent to the CIBIL credit-bureau check.\nSpeaker 2: Please keep your identity proof, bank statements and latest salary slips ready. Can our sales manager meet you tomorrow at 3 PM?\nSpeaker 1: Yes, tomorrow at 3 PM works for the sales-manager appointment. I am pleased with the explanation.\nSpeaker 2: Thank you for your time. Have a good day. Goodbye.\nSpeaker 1: Goodbye."
+    "turns": [
+      {
+        "speaker": "Speaker 2",
+        "text": "Hello, good morning. I am Kavya calling from Bharosa Bank about a loan offer. Am I speaking with Arjun Mehta?"
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "Yes, my name is Arjun Mehta."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "Thank you. For this fictional demonstration, please confirm your date of birth and only the last four PAN characters, not the full PAN."
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "My date of birth is 05/08/1991. My last four PAN characters are 076L."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "What are your occupation, employer, work experience and income?"
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "My occupation is salaried. I work for Example Technologies. I have 8 years of work experience. My monthly salary is Rs 85,000. My side business has annual turnover of Rs 12 lakh."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "Please confirm the current and permanent cities, pincodes and whether each home is owned or rented."
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "My current city is Pune. My current pincode is 411001. My current home is rented. My permanent city is Jaipur. My permanent pincode is 302001. My permanent home is owned."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "The initial eligibility ceiling is Rs 5 lakh. All figures in this example are fictional, not actual bank terms."
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "What loan amount can you offer? I am interested in Rs 3.5 lakh. I need it urgently by Friday. What is the EMI, what is the tenure, and what is my total outflow? Do I need to visit a branch?"
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "The final offered loan principal is Rs 3.5 lakh. The interest rate is 18% reducing. The tenure is 36 months. The monthly EMI is Rs 12,653. The processing fee is Rs 3,500. Total repayment is Rs 455,508 excluding fees and optional products. A branch visit is not required. These are stated example figures, not a calculation or recommendation."
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "That sounds good. I am interested and would like to proceed with Rs 3.5 lakh. Please explain the optional products and early-payment terms."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "Life insurance: Optional life cover with a one-time premium of Rs 2,000. Health insurance: Optional health cover with an annual premium of Rs 1,500. The Flexi Payment Reserve amount is Rs 10,000. Part payment: Allowed after 6 EMIs with no part-payment charge. Foreclosure: Allowed after 12 EMIs with a charge of 2% of outstanding principal. Broken Period Interest is Rs 1,234."
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "Thank you, that is clear. I have not agreed to buy either insurance option."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "May I have your consent to run a CIBIL credit-bureau check for this loan application?"
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "Yes, I consent to the CIBIL credit-bureau check."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "Please keep your identity proof, bank statements and latest salary slips ready. Can our sales manager meet you tomorrow at 3 PM?"
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "Yes, tomorrow at 3 PM works for the sales-manager appointment. I am pleased with the explanation."
+      },
+      {
+        "speaker": "Speaker 2",
+        "text": "Thank you for your time. Have a good day. Goodbye."
+      },
+      {
+        "speaker": "Speaker 1",
+        "text": "Goodbye."
+      }
+    ]
   },
   "sample_output": {
     "Greetings_Start": "Yes",

@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 from entities import NONE, normalize_entity
 from models import FieldDef, FieldResult
 from output_transforms import transform_output
+from questions import choice_option_names
 
 
 def _confidence(a: dict) -> float | None:
@@ -63,6 +64,12 @@ def build_results(fields: list[FieldDef], answers: dict, candidates: dict[str, l
             r.value = a.get("choice") if f.kind == "choice" else a.get("score")
             r.confidence = _confidence(a)
             r.probabilities = a.get("probabilities")
+            if f.kind == "choice":
+                names = {wire: original for original, wire in choice_option_names(f.criteria or {}).items()}
+                if isinstance(r.value, str):
+                    r.value = names.get(r.value, r.value)
+                if isinstance(r.probabilities, dict):
+                    r.probabilities = {names.get(key, key): value for key, value in r.probabilities.items()}
             r.legend = a.get("legend")
             if r.confidence is not None and r.confidence < f.min_confidence:
                 r.needs_review, r.review_reason = True, f"Low confidence ({r.confidence})"

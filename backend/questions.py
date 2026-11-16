@@ -9,6 +9,21 @@ class FieldError(ValueError):
     pass
 
 
+def choice_option_names(criteria: dict[str, str | None]) -> dict[str, str]:
+    """Keep blank business values out of the provider's option names."""
+    names = {key: key for key in criteria if key.strip()}
+    for key in criteria:
+        if key.strip():
+            continue
+        name = "not_mentioned"
+        suffix = 2
+        while name in names.values():
+            name = f"not_mentioned_{suffix}"
+            suffix += 1
+        names[key] = name
+    return names
+
+
 def build_questions(fields: list[FieldDef], text: str) -> tuple[dict, dict[str, list[str]]]:
     """Return (questions, candidates_by_field_id)."""
     questions: dict = {}
@@ -44,7 +59,9 @@ def build_questions(fields: list[FieldDef], text: str) -> tuple[dict, dict[str, 
                 raise FieldError(f"Choice field '{f.id}' needs at least 2 options")
             if len(f.criteria) > MAX_CHOICES:
                 raise FieldError(f"Choice field '{f.id}' exceeds {MAX_CHOICES} options")
-            q = {"type": "choice", "instructions": f.instructions, "criteria": dict(f.criteria)}
+            names = choice_option_names(f.criteria)
+            q = {"type": "choice", "instructions": f.instructions,
+                 "criteria": {names[key]: description for key, description in f.criteria.items()}}
         elif f.kind == "score":
             if not f.levels or len(f.levels) < 2:
                 raise FieldError(f"Score field '{f.id}' needs at least 2 levels")

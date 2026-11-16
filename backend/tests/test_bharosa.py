@@ -14,7 +14,7 @@ from models import FieldDef
 from normalize import normalize_transcript, transcript_text
 from output_transforms import transform_output
 from postprocess import build_results, build_structured_output
-from questions import FieldError, build_questions
+from questions import FieldError, build_questions, choice_option_names
 
 client = TestClient(app)
 URL = "https://res.services.ai.azure.com/providers/microsoft/v1/systemone"
@@ -46,6 +46,9 @@ def answers_for_sample(s):
 def test_bharosa_complete_schema_and_candidate_coverage():
     s = scenario()
     assert s["title"] == "Bharosa Bank Loan Sales"
+    assert "text" not in s["sample"]
+    assert len(s["sample"]["turns"]) == 20
+    assert all(set(turn) == {"speaker", "text"} for turn in s["sample"]["turns"])
     fields = [FieldDef(**f) for f in s["fields"]]
     state, warnings = normalize_transcript(s["sample"])
     assert state["turns"][0]["speaker"] == "spk2"
@@ -53,6 +56,9 @@ def test_bharosa_complete_schema_and_candidate_coverage():
     assert state["language"] == "en-IN" and state["direction"] == "outbound"
     assert any("roles" in w for w in warnings)
     questions, candidates = build_questions(fields, transcript_text(state))
+    for question in questions.values():
+        if question["type"] == "choice":
+            assert all(key.strip() for key in question["criteria"])
     for f in fields:
         if f.source_field:
             assert f.id not in questions
@@ -176,3 +182,59 @@ def test_speaker_lines_preserve_roles_without_assuming_numbers():
         normalize_transcript({"text": "Speaker 2: Hello.\nUnlabelled response"})
     with pytest.raises(ValueError, match="per line"):
         normalize_transcript("Unlabelled response")
+
+
+def test_blank_option_mapping_avoids_collisions_and_round_trips_probabilities():
+    criteria = {"Yes": "Yes", "not_mentioned": "A literal option", "not_mentioned_2": "Another",
+                "": "Not discussed", " ": "Unclear"}
+    names = choice_option_names(criteria)
+    assert names[""] == "not_mentioned_3"
+    assert names[" "] == "not_mentioned_4"
+    assert len(set(names.values())) == len(criteria)
+    field = FieldDef(id="consent", kind="choice", instructions="Was consent obtained?",
+                     criteria=criteria, output_path=["Loan_options", "CIBIL_Consent"])
+    questions, _ = build_questions([field], "")
+    assert set(questions["consent"]["criteria"]) == set(names.values())
+    results, flags = build_results([field], {"consent": {
+        "choice": names[""], "probabilities": {names[""]: 0.98, "Yes": 0.02},
+    }}, {})
+    assert flags == []
+    assert results[0].value == ""
+    assert results[0].probabilities == {"": 0.98, "Yes": 0.02}
+    assert build_structured_output([field], results) == {"Loan_options": {"CIBIL_Consent": ""}}
+
+
+@pytest.mark.parametrize("provider", ["jev", "microsoft"])
+@respx.mock
+def test_bharosa_never_sends_empty_option_names_to_either_provider(provider):
+    s = scenario()
+    fields = [f for f in s["fields"] if f["id"] in {
+        "cibil_consent", "current_residence_type", "permanent_residence_type", "loan_rate_type",
+    }]
+    url = URL if provider == "microsoft" else "https://api.typesafe.ai/v1/systemone"
+
+    def reject_empty_options(request):
+        body = json.loads(request.content)
+        for question in body["questions"].values():
+            assert question["type"] == "choice"
+            assert all(key.strip() for key in question["criteria"])
+            assert "not_mentioned" in question["criteria"]
+        return httpx.Response(200, json={"answers": {
+            fid: {"choice": "not_mentioned", "confidence": 0.99} for fid in body["questions"]
+        }})
+
+    respx.post(url).mock(side_effect=reject_empty_options)
+    response = client.post("/api/analyze", json={
+        "api_key": "test-key", "provider": provider,
+        "endpoint": "https://res.services.ai.azure.com" if provider == "microsoft" else None,
+        "model": "Decision-1" if provider == "microsoft" else "jev-latest",
+        "transcript": {"turns": [{"speaker": "customer", "text": "Just saying hello."}]},
+        "fields": fields,
+    })
+    assert response.status_code == 200, response.text
+    assert response.json()["structured_output"] == {
+        "Current_Location": {"ResidenceType": ""},
+        "Permanent_Location": {"ResidenceType": ""},
+        "Loan": {"Rate_type": ""},
+        "Loan_options": {"CIBIL_Consent": ""},
+    }

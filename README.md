@@ -64,8 +64,9 @@ manager appointment. The scenario loads a fictional English call and exposes
 **Sample expected JSON** beneath its description. This is a reference example,
 not a recorded model result or actual bank product terms.
 
-The sample uses `{"language": "en-IN", "direction": "outbound", "text": "Speaker 2: ...\nSpeaker 1: ..."}`.
-One `Speaker N: text` segment is required per line. Speaker numbers are preserved;
+The sample uses `{"language": "en-IN", "direction": "outbound", "turns": [{"speaker": "Speaker 2", "text": "..."}, {"speaker": "Speaker 1", "text": "..."}]}`.
+Each speaker segment is a separate turn for readability. Input also supports a
+`text` field with one `Speaker N: text` segment per line. Speaker numbers are preserved;
 the questions instruct the model to infer roles from the conversation, with the
 existing role-label warning retained. Speaker 1 is the customer in this example.
 
@@ -77,6 +78,9 @@ string fields default to `""`. `Loan.Rate` remains a percent string such as `"18
 Salary and turnover retain the stated period; the requested output schema has no
 separate period field. Numeric characters mean decimal digits `0-9`, not Roman
 numerals. Insurance and repayment details preserve the selected wording.
+Blank choice values are sent as non-empty API labels such as `not_mentioned` and
+mapped back to `""` in results, preserving the output schema without invalid API
+option names. Existing saved field definitions with blank options are supported.
 
 This scenario is English-first: already-English/Roman text is reused for the
 corresponding normalized fields. Non-ASCII translation or transliteration is not
