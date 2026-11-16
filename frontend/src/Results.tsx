@@ -88,13 +88,13 @@ export function Results({ data, elapsedMs, provider }: { data: AnalyzeResponse; 
           <div className={data.flags.length ? 'flag' : 'ok'}>
             {data.flags.length ? `${data.flags.length} field(s) need review` : 'No review flags'}
           </div>
+          {data.results.map((r) => <ResultCard key={r.id} r={r} />)}
           {data.structured_output && <div className="card">
             <strong>Extracted JSON</strong>
             <p className="muted">Missing values follow the field schema (empty strings or null). Candidate matching and output conversions can require review; inspect field results before using this output.</p>
             <pre>{JSON.stringify(data.structured_output, null, 2)}</pre>
             <button className="small" onClick={() => downloadJson(data.structured_output, 'extracted-entities.json')}>Download extracted JSON</button>
           </div>}
-          {data.results.map((r) => <ResultCard key={r.id} r={r} />)}
         </>
       )}
       {tab === 'request' && <pre>{JSON.stringify(data.raw_request, null, 2)}</pre>}
